@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { SimulationForm } from './definitions';
  
 const FormSchema = z.object({
   id: z.string(),
@@ -12,9 +13,20 @@ const FormSchema = z.object({
   status: z.enum(['pending', 'paid']),
   date: z.string(),
 });
+
+const SimulationSchema = z.object({
+  id: z.string(),
+  simulation_name: z.string(),
+  owner: z.string(),
+  description: z.string(),
+  scenario_properties: z.string(),
+  species: z.string(),
+  date: z.string()
+})
  
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+const UpdateSimulation = SimulationSchema.omit({ id: true, date: true });
 
  
 export async function createInvoice(formData: FormData) {
@@ -40,6 +52,30 @@ export async function createInvoice(formData: FormData) {
    
     revalidatePath('/dashboard/invoices');
     redirect('/dashboard/invoices');
+  }
+
+  export async function updateSimulation(id: string, formData: FormData) {
+    const  { simulation_name, owner, description, scenario_properties, species} = UpdateSimulation.parse({
+      simulation_name: formData.get('simulation_name'),
+      owner: formData.get('owner'),
+      description: formData.get('description'),
+      scenario_properties: formData.get('scenario_properties'),
+      species: formData.get('species'),
+    });
+
+    const date = new Date().toISOString().split('T')[0];
+      try {
+        await sql`
+            UPDATE invoices
+            SET simulation_name = ${simulation_name}, owner = ${owner}, description = ${description}
+            WHERE id = ${id}
+          `;
+      } catch (error) {
+        return { message: 'Database Error: Failed to Update Invoice.' };
+      }
+
+      revalidatePath('/dashboard/simulations');
+      redirect('/dashboard/simulations');
   }
 
   export async function updateInvoice(id: string, formData: FormData) {

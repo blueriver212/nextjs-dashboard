@@ -10,6 +10,16 @@ import {
 } from './definitions';
 import { formatCurrency } from './utils';
 
+export async function fetchSimulations() {
+  try {
+    const data = await sql`SELECT * FROM simulations`;
+    return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch simulations.');
+  }
+}
+
 export async function fetchRevenue() {
   // Add noStore() here to prevent the response from being cached.
   // This is equivalent to in fetch(..., {cache: 'no-store'}).
@@ -88,6 +98,34 @@ export async function fetchCardData() {
 }
 
 const ITEMS_PER_PAGE = 6;
+
+export async function fetchFilteredSimulations(query: string, currentPage: number) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    const simulations = await sql`
+      SELECT
+        simulation_name,
+        owner,
+        description,
+        created
+      FROM simulations
+      WHERE
+        simulation_name ILIKE ${`%${query}%`} OR
+        owner ILIKE ${`%${query}%`} OR
+        description ILIKE ${`%${query}%`} OR
+        created::text ILIKE ${`%${query}%`}
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `;
+
+    return simulations.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch simulations.');
+  }
+}
+
+
 export async function fetchFilteredInvoices(
   query: string,
   currentPage: number,
@@ -120,6 +158,27 @@ export async function fetchFilteredInvoices(
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoices.');
+  }
+}
+
+export async function fetchSimulationPages(query: string) {
+  try {
+    const count = await sql`
+      SELECT COUNT(*)
+      FROM simulations.simulation
+      WHERE
+        simulation_name ILIKE ${`%${query}%`} OR
+        owner ILIKE ${`%${query}%`} OR
+        description ILIKE ${`%${query}%`} OR
+        created::text ILIKE ${`%${query}%`} OR
+        modified::text ILIKE ${`%${query}%`}
+    `;
+
+    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of simulations.');
   }
 }
 

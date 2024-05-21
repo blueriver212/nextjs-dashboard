@@ -87,3 +87,13 @@ export type InvoiceForm = {
   status: 'pending' | 'paid';
 };
 
+export type SimulationForm = {
+  id: string;
+  simulation_name: string;
+  owner: string;
+  description: string;
+  created: string;
+  modified: string;
+  scenario_properties: JSON;
+  species: JSON;
+};

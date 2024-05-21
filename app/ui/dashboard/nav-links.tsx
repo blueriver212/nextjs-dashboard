@@ -20,6 +20,7 @@ const links = [
     icon: DocumentDuplicateIcon,
   },
   { name: 'Customers', href: '/dashboard/customers', icon: UserGroupIcon },
+  { name: 'Simulations', href: '/dashboard/simulations', icon: GlobeEuropeAfricaIcon},
   { name: 'pyssem', href: '/dashboard/pyssem', icon:  GlobeEuropeAfricaIcon},
 ];
 
