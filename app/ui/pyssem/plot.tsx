@@ -54,7 +54,7 @@ const SummaryGraph: React.FC = () => {
         y: totalAllSpecies,
         mode: 'lines',
         name: 'Total All Species',
-        line: { color: 'black', width: 2, dash: 'dash' }
+        // line: { color: 'black', width: 2, dash: 'dash' }
     });
 
     const summaryLayout: Partial<Plotly.Layout> = {

@@ -67,7 +67,7 @@ export default function EditSimulationForm({
           </div>
         </div>
 
-        {/* Scenario Properties */}
+        {/* Scenario Properties
         <div className="mb-4">
           <label htmlFor="scenario_properties" className="mb-2 block text-sm font-medium">
             Scenario Properties
@@ -207,7 +207,7 @@ export default function EditSimulationForm({
             </div>
           </div>
         </div>
-
+ */}
 
       </div>
       <div className="mt-6 flex justify-end gap-4">
