@@ -388,6 +388,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                       id="speciesName"
                       defaultValue="Debris"
                       className="col-span-2"
+                      required={true}
                       value={newSpecies.name}
                       onChange={(e) => setNewSpecies({ ...newSpecies, name: e.target.value })}
                     />
@@ -400,6 +401,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                       id="cd"
                       type='number'
                       className="col-span-1"
+                      required={true}
                       value={newSpecies.cd}
                       onChange={(e) => setNewSpecies({ ...newSpecies, cd: e.target.value })}
                     />
@@ -412,6 +414,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                       id="mass"
                       type='number'
                       className="col-span-1"
+                      required={true}
                       value={newSpecies.mass}
                       onChange={(e) => setNewSpecies({ ...newSpecies, mass: e.target.value })}
                     />
@@ -423,6 +426,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                     <Input
                       id="radius"
                       type='number'
+                      required={true}
                       className="col-span-1"
                       value={newSpecies.radius}
                       onChange={(e) => setNewSpecies({ ...newSpecies, radius: e.target.value })}
@@ -444,25 +448,23 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                     <Label htmlFor="active" className="text-right">
                       Active
                     </Label>
-                    <Input
+                    <Switch
                       id="active"
-                      type="checkbox"
                       className="col-span-3"
                       checked={newSpecies.active}
-                      onChange={() => setNewSpecies({ ...newSpecies, active: !newSpecies.active })}
+                      onCheckedChange={() => setNewSpecies({ ...newSpecies, active: !newSpecies.active })}
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4 mt-3">
                     <Label htmlFor="drag" className="text-right">
                       Drag Effected?
                     </Label>
-                    <Input
-                      type="checkbox"
+                    <Switch
                       defaultChecked={true}
                       id="drag"
                       className="col-span-1"
                       checked={newSpecies.drag}
-                      onChange={() => setNewSpecies({ ...newSpecies, drag: !newSpecies.drag })}
+                      onCheckedChange={() => setNewSpecies({ ...newSpecies, drag: !newSpecies.drag })}
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4 mt-3">
@@ -473,6 +475,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                       id="pmd"
                       type='number'
                       defaultValue="0.9"
+                      required={true}
                       value={newSpecies.pmd}
                       onChange={(e) => setNewSpecies({ ...newSpecies, pmd: e.target.value })}
                     />
