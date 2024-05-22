@@ -9,15 +9,18 @@ export default async function Page() {
     <main>
       <Breadcrumbs
         breadcrumbs={[
-          { label: 'Invoices', href: '/dashboard/simulations' },
+          { label: 'Simulations', href: '/dashboard/simulations' },
           {
-            label: 'Create Invoice',
+            label: 'Create A New Simulation',
             href: '/dashboard/simulations/create',
             active: true,
           },
         ]}
       />
-      {/* <Form customers={simulations} /> */}
+      {/* Customers refers to previously when all customers would be passed
+      I think a goo dbit functionalit for this would be to ensure that you can't name
+      2 simulations the same */}
+      <Form customers={simulations} />
     </main>
   );
 }

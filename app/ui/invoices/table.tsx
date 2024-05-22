@@ -1,8 +1,9 @@
 import Image from 'next/image';
-import { UpdateInvoice, DeleteInvoice } from '@/app/ui/simulations/buttons';
+import { DeleteSimulation, CreateSimulation } from '@/app/ui/simulations/buttons';
 import InvoiceStatus from '@/app/ui/simulations/status';
 import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
 import { fetchFilteredSimulations } from '@/app/lib/data';
+import { CreateInvoice } from './buttons';
 
 export default async function SimulationsTable({
   query,
@@ -111,16 +112,16 @@ export default async function SimulationsTable({
                   </td>
                   {/* <td className="whitespace-nowrap px-3 py-3">
                     <InvoiceStatus status={invoice.status} />
-                  </td>
-                  <td className="whitespace-nowrap py-3 pl-6 pr-3">
-                    <div className="flex justify-end gap-3">
-                      <UpdateInvoice id={invoice.id} />
-                      <DeleteInvoice id={invoice.id} />
-                    </div>
-                  </td> */}
+                  </td>*/}
                   <td className="whitespace-nowrap px-3 py-3">
                     {simulation.description}
                   </td>
+                  <td className="whitespace-nowrap py-3 pl-6 pr-3">
+                    <div className="flex justify-end gap-3">
+                      <CreateSimulation id={simulation.id} />
+                      <DeleteSimulation id={simulation.id} />
+                    </div>
+                  </td> 
                 </tr>
               ))}
             </tbody>
