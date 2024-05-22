@@ -1,6 +1,8 @@
-import InvoiceStatus from '@/app/ui/simulations/status';
-import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
+import SimulationStatus from '@/app/ui/simulations/status';
+import { formatDateToLocal } from '@/app/lib/utils';
 import { fetchFilteredSimulations } from '@/app/lib/data';
+import { DeleteSimulation, UpdateSimulation } from './buttons';
+
 
 export default async function InvoicesTable({
   query,
@@ -35,19 +37,16 @@ export default async function InvoicesTable({
                     </div>
                     <p className="text-sm text-gray-500">{simulation.owner}</p>
                   </div>
-                  <InvoiceStatus status={simulation.status} />
+                  <SimulationStatus status={simulation.status} />
                 </div>
                 <div className="flex w-full items-center justify-between pt-4">
                   <div>
-                    {/* <p className="text-xl font-medium">
-                      {formatCurrency(invoice.amount)}
-                    </p> */}
                     <p>{formatDateToLocal(simulation.created)}</p>
                   </div>
-                  {/* <div className="flex justify-end gap-2">
-                    <UpdateInvoice id={invoice.id} />
-                    <DeleteInvoice id={invoice.id} />
-                  </div> */}
+                  <div className="flex justify-end gap-2">
+                    <UpdateSimulation id={simulation.id} />
+                    <DeleteSimulation id={simulation.id} />
+                  </div>
                 </div>
               </div>
             ))}
@@ -56,16 +55,16 @@ export default async function InvoicesTable({
             <thead className="rounded-lg text-left text-sm font-normal">
               <tr>
                 <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                  Customer
+                  Simulation Name
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Email
+                  Owner
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Amount
+                  Date Created
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Date
+                  Description
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Status
@@ -90,27 +89,27 @@ export default async function InvoicesTable({
                         height={28}
                         alt={`${invoice.name}'s profile picture`}
                       /> */}
-                      <p>{simulation.name}</p>
+                      <p>{simulation.simulation_name}</p>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    {simulation.simulation_name}
+                    {simulation.owner}
                   </td>
-                  {/* <td className="whitespace-nowrap px-3 py-3">
-                    {formatCurrency(invoice.amount)}
-                  </td> */}
                   <td className="whitespace-nowrap px-3 py-3">
                     {formatDateToLocal(simulation.created)}
                   </td>
-                  {/* <td className="whitespace-nowrap px-3 py-3">
-                    <InvoiceStatus status={invoice.status} />
+                  <td className="whitespace-nowrap px-3 py-3">
+                    {simulation.description}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3">
+                    <SimulationStatus status={simulation.status} />
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">
-                      <UpdateInvoice id={invoice.id} />
-                      <DeleteInvoice id={invoice.id} />
+                      <UpdateSimulation id={simulation.id} />
+                      <DeleteSimulation id={simulation.id} />
                     </div>
-                  </td> */}
+                  </td>
                 </tr>
               ))}
             </tbody>

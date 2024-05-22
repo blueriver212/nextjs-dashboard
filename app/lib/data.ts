@@ -7,18 +7,9 @@ import {
   LatestInvoiceRaw,
   User,
   Revenue,
+  SimulationForm,
 } from './definitions';
-import { formatCurrency } from './utils';
 
-export async function fetchSimulations() {
-  try {
-    const data = await sql`SELECT * FROM simulations`;
-    return data.rows;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch simulations.');
-  }
-}
 
 export async function fetchRevenue() {
   // Add noStore() here to prevent the response from being cached.
@@ -53,7 +44,7 @@ export async function fetchLatestInvoices() {
 
     const latestInvoices = data.rows.map((invoice) => ({
       ...invoice,
-      amount: formatCurrency(invoice.amount),
+      amount: invoice.amount,
     }));
     return latestInvoices;
   } catch (error) {
@@ -82,14 +73,10 @@ export async function fetchCardData() {
 
     const numberOfInvoices = Number(data[0].rows[0].count ?? '0');
     const numberOfCustomers = Number(data[1].rows[0].count ?? '0');
-    const totalPaidInvoices = formatCurrency(data[2].rows[0].paid ?? '0');
-    const totalPendingInvoices = formatCurrency(data[2].rows[0].pending ?? '0');
 
     return {
       numberOfCustomers,
-      numberOfInvoices,
-      totalPaidInvoices,
-      totalPendingInvoices,
+      numberOfInvoices
     };
   } catch (error) {
     console.error('Database Error:', error);
@@ -97,18 +84,31 @@ export async function fetchCardData() {
   }
 }
 
-const ITEMS_PER_PAGE = 6;
+export async function fetchSimulations() {
+  try {
+    const data = await sql`SELECT * FROM simulations`;
+    return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch simulations.');
+  }
+}
+
+
+const ITEMS_PER_PAGE = 8;
 
 export async function fetchFilteredSimulations(query: string, currentPage: number) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
-    const simulations = await sql`
+    const simulations = await sql<SimulationForm>`
       SELECT
+        id,
         simulation_name,
         owner,
         description,
-        created
+        created,
+        status
       FROM simulations
       WHERE
         simulation_name ILIKE ${`%${query}%`} OR
@@ -165,13 +165,12 @@ export async function fetchSimulationPages(query: string) {
   try {
     const count = await sql`
       SELECT COUNT(*)
-      FROM simulations.simulation
+      FROM simulations
       WHERE
         simulation_name ILIKE ${`%${query}%`} OR
         owner ILIKE ${`%${query}%`} OR
         description ILIKE ${`%${query}%`} OR
-        created::text ILIKE ${`%${query}%`} OR
-        modified::text ILIKE ${`%${query}%`}
+        created::text ILIKE ${`%${query}%`}
     `;
 
     const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
@@ -200,6 +199,16 @@ export async function fetchInvoicesPages(query: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch total number of invoices.');
+  }
+}
+
+export async function fetchSimulationById(id: string) {
+  try {
+    const data = await sql<SimulationForm>`SELECT * FROM simulations WHERE id = ${id}`;
+    return data.rows[0];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch simulation.');
   }
 }
 
@@ -268,8 +277,8 @@ export async function fetchFilteredCustomers(query: string) {
 
     const customers = data.rows.map((customer) => ({
       ...customer,
-      total_pending: formatCurrency(customer.total_pending),
-      total_paid: formatCurrency(customer.total_paid),
+      total_pending: customer.total_pending,
+      total_paid: customer.total_paid,
     }));
 
     return customers;
