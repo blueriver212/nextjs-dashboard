@@ -116,12 +116,12 @@ export default async function SimulationsTable({
                   <td className="whitespace-nowrap px-3 py-3">
                     {simulation.description}
                   </td>
-                  <td className="whitespace-nowrap py-3 pl-6 pr-3">
+                  {/* <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">
                       <CreateSimulation id={simulation.id} />
                       <DeleteSimulation id={simulation.id} />
                     </div>
-                  </td> 
+                  </td>  */}
                 </tr>
               ))}
             </tbody>

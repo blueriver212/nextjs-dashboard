@@ -1,5 +1,3 @@
-import Image from 'next/image';
-import { UpdateInvoice, DeleteInvoice } from '@/app/ui/simulations/buttons';
 import InvoiceStatus from '@/app/ui/simulations/status';
 import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
 import { fetchFilteredSimulations } from '@/app/lib/data';

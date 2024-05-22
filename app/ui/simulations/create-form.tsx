@@ -164,7 +164,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
         {/* Simulation Owner */}
         <div className="mb-4">
           <label htmlFor="owner" className="mb-2 block text-sm font-medium">
-            What's your name?
+            What is your name?
           </label>
           <div className="relative mt-2 rounded-md">
             <div className="relative">
