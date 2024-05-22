@@ -1,6 +1,18 @@
+'use client';
+
 import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { deleteInvoice } from '@/app/lib/actions';
+import { deleteSimulation } from '@/app/lib/actions';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { useState } from 'react';
 
 
 // THESE ALL NEED EDITING!!!
@@ -28,14 +40,31 @@ export function UpdateSimulation({ id }: { id: string }) {
 }
 
 export function DeleteSimulation({ id }: { id: string }) {
-  const deleteInvoiceWithId = deleteInvoice.bind(null, id);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const deleteSimulationByID = deleteSimulation.bind(null, id);
+
+  const handleDelete = () => {
+    deleteSimulationByID();
+    setModalIsOpen(false);
+  };
  
   return (
-    <form action={deleteInvoiceWithId}>
-      <button className="rounded-md border p-2 hover:bg-gray-100">
-        <span className="sr-only">Delete</span>
+    <Dialog>
+      <DialogTrigger>
         <TrashIcon className="w-4" />
-      </button>
-    </form>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirm Delete</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete this simulation? This action cannot be undone.
+          </DialogDescription>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            {/* <Button style={{ backgroundColor: 'grey' }} onClick={() => setModalIsOpen(false)}>No</Button> */}
+            <Button style={{ backgroundColor: 'red', alignItems: 'right' }} onClick={handleDelete}>Yes</Button>
+          </div>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
   );
 }

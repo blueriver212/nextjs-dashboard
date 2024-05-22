@@ -125,6 +125,8 @@ export async function createSimulation(formData: FormData) {
     redirect('/dashboard/invoices');
   }
 
+
+
   export async function deleteInvoice(id: string) {
     try {
       await sql`DELETE FROM invoices WHERE id = ${id}`;
@@ -132,5 +134,15 @@ export async function createSimulation(formData: FormData) {
       return { message: 'Deleted Invoice.' };
     } catch (error) {
       return { message: 'Database Error: Failed to Delete Invoice.' };
+    }
+  }
+
+  export async function deleteSimulation(id: string) {
+    try {
+      await sql`DELETE FROM simulations WHERE id = ${id}`;
+      revalidatePath('/dashboard/simulations');
+      return { message: 'Deleted Simulation.' };
+    } catch (error) {
+      return { message: 'Database Error: Failed to Delete Simulation.' };
     }
   }
