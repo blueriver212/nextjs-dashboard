@@ -1,10 +1,11 @@
 'use server';
  
 import { z } from 'zod';
-import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { SimulationForm } from './definitions';
+import { sql } from '@vercel/postgres';
+import { Console } from 'console';
  
 const FormSchema = z.object({
   id: z.string(),
@@ -26,7 +27,49 @@ const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateSimulation = SimulationSchema.omit({ id: true, date: true });
 
- 
+export async function createSimulation(formData: SimulationForm) {
+  console.log('Received form data:', formData);
+
+  const scenario_properties = JSON.stringify(formData.scenario_properties);
+  const species = JSON.stringify(formData.species);
+
+  try {
+    await sql`
+      INSERT INTO simulations (
+        id,
+        simulation_name,
+        owner,
+        status,
+        description,
+        created,
+        modified,
+        scenario_properties,
+        species
+      ) VALUES (
+        ${formData.id},
+        ${formData.simulation_name},
+        ${formData.owner},
+        ${formData.status},
+        ${formData.description},
+        ${formData.created},
+        ${formData.modified},
+        ${JSON.stringify(scenario_properties)},
+        ${JSON.stringify(species)}
+      )
+    `;
+  } catch (error) {
+    console.error('Database Error:', error);
+    return {
+      message: 'Database Error: Failed to Create Simulation.',
+    };
+  }
+
+  console.log('Simulation created');
+  revalidatePath('/dashboard/simulations'); 
+  redirect('/dashboard/simulations');
+  
+}
+
 export async function createInvoice(formData: FormData) {
     const { customerId, amount, status } = CreateInvoice.parse({
       customerId: formData.get('customerId'),
@@ -51,56 +94,6 @@ export async function createInvoice(formData: FormData) {
     revalidatePath('/dashboard/invoices');
     redirect('/dashboard/invoices');
   }
-
-export async function createSimulation(formData: FormData) {
-  const { simulation_name, owner, description } = SimulationSchema.parse({
-    simulation_name: formData.get('simulation_name'),
-    owner: formData.get('owner'),
-    description: formData.get('description')
-    // scenario_properties: formData.get('scenario_properties'),
-    // species: formData.get('species'),
-  });
-  
-  const date = new Date().toISOString().split('T')[0];
-  
-  try {
-    await sql`
-      INSERT INTO simulations (simulation_name, owner, description, created)
-      VALUES (${simulation_name}, ${owner}, ${description}, ${date})
-    `;
-  } catch (error) {
-    return {
-      message: 'Database Error: Failed to Create Simulation.',
-    };
-  }
-  
-  revalidatePath('/dashboard/simulations');
-  redirect('/dashboard/simulations');
-}
-
-  // export async function updateSimulation(id: string, formData: FormData) {
-  //   const  { simulation_name, owner, description, scenario_properties, species} = UpdateSimulation.parse({
-  //     simulation_name: formData.get('simulation_name'),
-  //     owner: formData.get('owner'),
-  //     description: formData.get('description'),
-  //     scenario_properties: formData.get('scenario_properties'),
-  //     species: formData.get('species'),
-  //   });
-
-  //   const date = new Date().toISOString().split('T')[0];
-  //     try {
-  //       await sql`
-  //           UPDATE invoices
-  //           SET simulation_name = ${simulation_name}, owner = ${owner}, description = ${description}
-  //           WHERE id = ${id}
-  //         `;
-  //     } catch (error) {
-  //       return { message: 'Database Error: Failed to Update Invoice.' };
-  //     }
-
-  //     revalidatePath('/dashboard/simulations');
-  //     redirect('/dashboard/simulations');
-  // }
 
   export async function updateInvoice(id: string, formData: FormData) {
     const { customerId, amount, status } = UpdateInvoice.parse({

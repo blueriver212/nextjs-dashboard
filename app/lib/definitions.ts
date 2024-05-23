@@ -96,7 +96,7 @@ export type SimulationForm = {
   modified: string;
   status: string;
   scenario_properties: ScenarioProperties;
-  species: Record<string, Species>;
+  species: Species[];
 }
 
 export type ScenarioProperties =  {

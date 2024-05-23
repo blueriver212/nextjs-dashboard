@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react'
-import { CustomerField } from '@/app/lib/definitions';
+import { FormEvent, useState } from 'react'
+import { CustomerField, SimulationForm } from '@/app/lib/definitions';
 import { Switch } from "@/components/ui/switch"
 import Link from 'next/link';
 import {
@@ -41,17 +41,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from '@/app/ui/button';
 import { Button as ShadButton } from '@/components/ui/button';
-
-type Species = {
-  name: string;
-  cd: string;
-  mass: string;
-  radius: string;
-  area: string;
-  active: boolean;
-  drag: boolean;
-  pmd: string;
-};
+import { createSimulation } from '@/app/lib/actions';
+import { Species } from '@/app/lib/definitions';
+const { v4: uuidv4 } = require('uuid');
 
 export default function Form({ customers }: { customers: CustomerField[] }) {
   // Create a hook that hides certain fields based on the toggle
@@ -62,22 +54,11 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
   }
 
   const [species, setSpecies] = useState<Species[]>([]);
-  const [newSpecies, setNewSpecies] = useState({
-    name: "Debris",
-    cd: "2.2",
-    mass: "1250",
-    radius: "4",
-    area: "0.5",
-    active: false,
-    drag: true,
-    pmd: "0.9",
-  });
+  const [newSpecies, setNewSpecies] = useState<Species | null>(null);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [currentSpecies, setCurrentSpecies] = useState(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingSpecies, setEditingSpecies] = useState<Species | null>(null);
 
   const handleEditSpecies = (e: React.FormEvent, species: Species, index: number) => {
     e.preventDefault();
@@ -91,35 +72,27 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
     e.preventDefault();
   
     if (isEditing) {
-      if (editingIndex !== null) {
-        const newSpeciesList = [...species];
-        newSpeciesList[editingIndex] = newSpecies;
-        setSpecies(newSpeciesList);
-        setEditingIndex(null);
-      }
+        if (editingIndex !== null && newSpecies !== null) {
+            const newSpeciesList = [...species];
+            newSpeciesList[editingIndex] = newSpecies;
+            setSpecies(newSpeciesList);
+            setEditingIndex(null);
+        }
     } else {
-      setSpecies([...species, newSpecies]);
+        if (newSpecies !== null) {
+            setSpecies([...species, newSpecies]);
+        }
     }
   
-    setNewSpecies({
-      ...newSpecies,
-      name: "",
-      cd: "",
-      mass: "",
-      radius: "",
-      area: "",
-      pmd: "",
-    });
-  
+    setNewSpecies(null);
     setIsEditing(false);
-  };
+};
+
 
 
   const closeDialog = () => {
     setIsDialogOpen(!isDialogOpen);
   }
-
-  
 
   const handleDeleteSpecies = (e: React.MouseEvent, index: number) => {
     e.preventDefault();
@@ -128,34 +101,55 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
     setSpecies(newSpecies);
   };
 
+  const createSim = (FormData: FormData) => {
+    // This function will take the current simulation data and format it correctly. 
+    const form = FormData;
+    const sim: SimulationForm = {
+      id: uuidv4(),
+      simulation_name: form.get('simulationName') as string,
+      owner: form.get('owner') as string,
+      description: form.get('description') as string,
+      created: new Date().toISOString(),
+      status: "not started",
+      scenario_properties: {
+        start_date: form.get('startDate') as string,
+        simulation_duration: parseInt(form.get('simulationDuration') as string),
+        steps: parseInt(form.get('steps') as string),
+        max_altitude: parseInt(form.get('maxAltitude') as string),
+        min_altitude: parseInt(form.get('minAltitude') as string),
+        n_shells: parseInt(form.get('nShells') as string),
+        integrator: form.get('integrator') as string,
+        density_model: form.get('densityModel') as string,
+        LC: parseFloat(form.get('launchCoefficient') as string),
+        v_imp: parseFloat(form.get('impactVelocity') as string),
+        launch_function: form.get('launchFunction') as string
+      },
+      species: species,
+      modified: new Date().toISOString(),
+    }
+    createSimulation(sim);
+  }
+
   return (
   <div>
     <div className="flex justify-end items-center">
       <label className="text-sm font-medium">Advanced Options</label>
       <Switch className="ml-2" onCheckedChange={toggleVisibility}/>
     </div> 
-    <form>     
+    <form action={createSim}>     
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Simulation Name */}
         <div className="mb-4">
-          <label htmlFor="customer" className="mb-2 block text-sm font-medium">
+          <label htmlFor="simulationName" className="mb-2 block text-sm font-medium">
             Simulation Name
           </label>
           <div className="relative">
             <input
-              id="customer"
-              name="customerId"
+              id="simulationName"
+              name="simulationName"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               placeholder="Name"
             >
-              {/* <option value="" disabled>
-                Select a customer
-              </option> */}
-              {/* {customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.name}
-                </option>
-              ))} */}
             </input>
             <CodeBracketIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
@@ -181,14 +175,14 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
 
         {/* Model Description */}
         <div className="mb-4" hidden={isVisible}>
-          <label htmlFor="modelDescription" className="mb-2 block text-sm font-medium">
+          <label htmlFor="description" className="mb-2 block text-sm font-medium">
             Model Description
           </label>
           <div className="relative mt-2 rounded-md">
             <div className="relative">
               <textarea
-                id="modelDescription"
-                name="modelDescription"
+                id="description"
+                name="description"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               />
               <DocumentTextIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -380,19 +374,19 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                 </DialogHeader>
               <div className="grid gap-4 py-4">
                 <form onSubmit={handleAddSpecies}>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
                     <Label htmlFor="speciesName" className="text-right">
-                      Name
+                        Name
                     </Label>
                     <Input
-                      id="speciesName"
-                      defaultValue="Debris"
-                      className="col-span-2"
-                      required={true}
-                      value={newSpecies.name}
-                      onChange={(e) => setNewSpecies({ ...newSpecies, name: e.target.value })}
+                        id="speciesName"
+                        defaultValue="Debris"
+                        className="col-span-2"
+                        required={true}
+                        value={newSpecies?.sym_name}
+                        onChange={(e) => setNewSpecies({ ...newSpecies, sym_name: e.target.value })}
                     />
-                  </div>
+                </div>
                   <div className="grid grid-cols-4 items-center gap-4 mt-3">
                     <Label htmlFor="cd" className="text-right">
                       Cd
@@ -402,84 +396,97 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                       type='number'
                       className="col-span-1"
                       required={true}
-                      value={newSpecies.cd}
-                      onChange={(e) => setNewSpecies({ ...newSpecies, cd: e.target.value })}
+                      value={newSpecies?.Cd}
+                      onChange={(e) => setNewSpecies({ ...newSpecies, Cd: e.target.value })}
                     />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
                     <Label htmlFor="mass" className="text-right">
-                      Mass (kg)
+                        Mass (kg)
                     </Label>
                     <Input
-                      id="mass"
-                      type='number'
-                      className="col-span-1"
-                      required={true}
-                      value={newSpecies.mass}
-                      onChange={(e) => setNewSpecies({ ...newSpecies, mass: e.target.value })}
+                        id="mass"
+                        type='text'
+                        className="col-span-1"
+                        required={true}
+                        defaultValue={newSpecies?.mass?.toString()}
+                        onChange={(e) => setNewSpecies({ ...newSpecies, mass: parseFloat(e.target.value) })}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
                     <Label htmlFor="radius" className="text-right">
-                      Radius (m)
+                        Radius (m)
                     </Label>
                     <Input
-                      id="radius"
-                      type='number'
-                      required={true}
-                      className="col-span-1"
-                      value={newSpecies.radius}
-                      onChange={(e) => setNewSpecies({ ...newSpecies, radius: e.target.value })}
+                        id="radius"
+                        type='number'
+                        required={true}
+                        className="col-span-1"
+                        defaultValue={newSpecies?.radius?.toString() ?? ''}
+                        onChange={(e) => setNewSpecies({ ...newSpecies, radius: parseFloat(e.target.value) })}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
                     <Label htmlFor="area" className="text-right">
-                      Area (m)
+                        Area (m)
                     </Label>
                     <Input
-                      id="area"
-                      type='number'
-                      className="col-span-1"
-                      value={newSpecies.area}
-                      onChange={(e) => setNewSpecies({ ...newSpecies, area: e.target.value })}
+                        id="area"
+                        type='number'
+                        className="col-span-1"
+                        defaultValue={newSpecies?.A?.toString() ?? ''}
+                        onChange={(e) => setNewSpecies({ ...newSpecies, area: e.target.value } as Species)}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
                     <Label htmlFor="active" className="text-right">
-                      Active
+                        Active
                     </Label>
                     <Switch
-                      id="active"
-                      className="col-span-3"
-                      checked={newSpecies.active}
-                      onCheckedChange={() => setNewSpecies({ ...newSpecies, active: !newSpecies.active })}
+                        id="active"
+                        className="col-span-3"
+                        defaultValue={newSpecies?.active?.toString() ?? ''}
+                        onCheckedChange={() => newSpecies && setNewSpecies({ ...newSpecies, active: !newSpecies.active })}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
                     <Label htmlFor="drag" className="text-right">
-                      Drag Effected?
+                        Drag Effected?
                     </Label>
                     <Switch
-                      defaultChecked={true}
-                      id="drag"
-                      className="col-span-1"
-                      checked={newSpecies.drag}
-                      onCheckedChange={() => setNewSpecies({ ...newSpecies, drag: !newSpecies.drag })}
+                        defaultChecked={true}
+                        id="drag"
+                        className="col-span-1"
+                        checked={newSpecies?.drag_effected}
+                        onCheckedChange={() => setNewSpecies({ ...newSpecies, drag_effected: !newSpecies?.drag_effected })}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
                     <Label htmlFor="pmd" className="text-right">
-                      PMD (%)
+                        PMD (%)
                     </Label>
                     <Input
-                      id="pmd"
-                      type='number'
-                      defaultValue="0.9"
-                      required={true}
-                      value={newSpecies.pmd}
-                      onChange={(e) => setNewSpecies({ ...newSpecies, pmd: e.target.value })}
+                        id="pmd"
+                        type='number'
+                        defaultValue="0.9"
+                        required={true}
+                        value={newSpecies?.Pm ?? ''}
+                        onChange={(e) => setNewSpecies({ ...newSpecies, Pm: parseFloat(e.target.value) })}
                     />
-                  </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                    <Label htmlFor="launchFunction" className="text-right">
+                        PMD (%)
+                    </Label>
+                    <Input
+                        id="launchFunction"
+                        type='text'
+                        defaultValue="constant"
+                        required={false}
+                        value={newSpecies?.Pm ?? ''}
+                        onChange={(e) => setNewSpecies({ ...newSpecies, Pm: parseFloat(e.target.value) })}
+                    />
+                </div>
                   <div className="mt-6 flex justify-end gap-4 mt-3">
                     <ShadButton type="submit">{isEditing ? 'Update Species' : 'Add Species'}</ShadButton>
                   </div>
@@ -503,14 +510,14 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
         <TableBody>
           {species.map((specie, index) => (
               <TableRow key={index}>
-                <TableCell className="font-medium">{specie.name}</TableCell>
-                <TableCell>{specie.cd}</TableCell>
+                <TableCell className="font-medium">{specie.sym_name}</TableCell>
+                <TableCell>{specie.Cd}</TableCell>
                 <TableCell>{specie.mass}</TableCell>
                 <TableCell>{specie.radius}</TableCell>
-                <TableCell>{specie.area}</TableCell>
+                <TableCell>{specie.A}</TableCell>
                 <TableCell>{specie.active ? 'Yes' : 'No'}</TableCell>
-                <TableCell>{specie.drag ? 'Yes' : 'No'}</TableCell>
-                <TableCell className="text-right">{specie.pmd}</TableCell>
+                <TableCell>{specie.drag_effected ? 'Yes' : 'No'}</TableCell>
+                <TableCell className="text-right">{specie.Pm}</TableCell>
                 <TableCell className="text-right">
                   <button className="rounded-md border p-2 hover:bg-gray-100"
                     onClick={(e) => handleEditSpecies(e, species[index], index)}>
