@@ -99,6 +99,11 @@ export type SimulationForm = {
   species: Species[];
 }
 
+export type SimulationNames = {
+  id: string;
+  simulation_name: string;
+}
+
 export type ScenarioProperties =  {
   start_date: string;
   simulation_duration: number;
@@ -121,7 +126,7 @@ export type Species = {
   mass_lb?: number;
   mass_ub?: number;
   radius?: number | number[];
-  A?: string | number | number[];
+  A?: number | number[];
   amr?: number;
   beta?: number;
   B?: number;

@@ -43,56 +43,65 @@ import { Button } from '@/app/ui/button';
 import { Button as ShadButton } from '@/components/ui/button';
 import { SimulationForm } from '@/app/lib/definitions';
 import { Species } from '@/app/lib/definitions';
+import { updateSimulation } from '@/app/lib/actions';
+import { SimulationNames } from '@/app/lib/definitions';
+import { set } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-export default function EditSimulationForm({ simulation }: { simulation: SimulationForm }) {
+export default function EditSimulationForm({ sim_names, simulation, edit }: { sim_names: SimulationNames[], simulation: SimulationForm, edit: boolean}) {
   // Create a hook that will show the advanced parts of the from based on the toggle
   const [isVisible, setVisibility] = useState(true);
+
   const toggleVisibility = () => {
     setVisibility(!isVisible);
   }
 
+  // This will handle when new species are added to the simulation
   const [species, setSpecies] = useState<Species[]>([]);
   const [newSpecies, setNewSpecies] = useState<Species | null>(null);
-
-    useEffect(() => {
-        if (simulation && simulation.species) {
-            setSpecies([...Object.values(simulation.species)] as Species[]);
-        }
-    }, [simulation]);
-
-    const [isEditing, setIsEditing] = useState(false);
-    const [currentSpecies, setCurrentSpecies] = useState(null);
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [editingSpecies, setEditingSpecies] = useState<Species | null>(null);
-
-    const handleEditSpecies = (e: React.FormEvent, species: Species, index: number) => {
-        e.preventDefault();
-        setIsEditing(true);
-        setNewSpecies({ ...species });
-        setEditingIndex(index);
-        setIsDialogOpen(true); 
-    };
-    
-    const handleAddSpecies = (e: React.FormEvent) => {
-        e.preventDefault();
       
-        if (isEditing) {
-            if (editingIndex !== null && newSpecies !== null) {
-                const newSpeciesList = [...species];
-                newSpeciesList[editingIndex] = newSpecies;
-                setSpecies(newSpeciesList);
-                setEditingIndex(null);
-            }
-        } else {
-            if (newSpecies !== null) {
-                setSpecies([...species, newSpecies]);
-            }
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentSpecies, setCurrentSpecies] = useState(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingSpecies, setEditingSpecies] = useState<Species | null>(null);
+
+  const handleEditSpecies = (e: React.FormEvent, species: Species, index: number) => {
+      e.preventDefault();
+      setIsEditing(true);
+      setNewSpecies({ ...species });
+      setEditingIndex(index);
+      setIsDialogOpen(true); 
+  };
+  
+  const handleAddSpecies = (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    if (isEditing) {
+        if (editingIndex !== null && newSpecies !== null) {
+            const newSpeciesList = [...species];
+            newSpeciesList[editingIndex] = newSpecies;
+            setSpecies(newSpeciesList);
+            setEditingIndex(null);
         }
-      
-        setNewSpecies(null);
-        setIsEditing(false);
-    };
+    } else {
+        if (newSpecies !== null) {
+            setSpecies([...species, newSpecies]);
+        }
+    }
+  
+    setNewSpecies(null);
+    setIsEditing(false);
+};
 
 
   const closeDialog = () => {
@@ -106,25 +115,57 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
     setSpecies(newSpecies);
   };
 
+  const handleSim = (FormData: FormData) => {
+    // This function will take the current simulation data and format it correctly. 
+    const form = FormData;
+    console.log(form);
+    const sim: SimulationForm = {
+      id: simulation?.id || '',
+      simulation_name: form.get('simulationName') as string,
+      owner: form.get('owner') as string,
+      description: form.get('description') as string,
+      created: new Date().toISOString(),
+      status: "not started",
+      scenario_properties: {
+        start_date: form.get('startDate') as string,
+        simulation_duration: parseInt(form.get('simulationDuration') as string),
+        steps: parseInt(form.get('steps') as string),
+        max_altitude: parseInt(form.get('maxAltitude') as string),
+        min_altitude: parseInt(form.get('minAltitude') as string),
+        n_shells: parseInt(form.get('nShells') as string),
+        integrator: form.get('integrator') as string,
+        density_model: form.get('densityModel') as string,
+        LC: parseFloat(form.get('launchCoefficient') as string),
+        v_imp: parseFloat(form.get('impactVelocity') as string),
+        launch_function: form.get('launchFunction') as string
+      },
+      species: species,
+      modified: new Date().toISOString(),
+    }
+
+    updateSimulation(sim);
+  }
+
   return (
-  <div>
+    <div>
     <div className="flex justify-end items-center">
       <label className="text-sm font-medium">Advanced Options</label>
       <Switch className="ml-2" onCheckedChange={toggleVisibility}/>
     </div> 
-    <form>     
+    <form action={handleSim}>     
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Simulation Name */}
         <div className="mb-4">
-          <label htmlFor="customer" className="mb-2 block text-sm font-medium">
+          <label htmlFor="simulationName" className="mb-2 block text-sm font-medium">
             Simulation Name
           </label>
           <div className="relative">
             <input
-              id="customer"
-              name="customerId"
+              id="simulationName"
+              name="simulationName"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              defaultValue={simulation.simulation_name}
+              placeholder="Name"
+              value={simulation?.simulation_name}
             >
             </input>
             <CodeBracketIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
@@ -142,8 +183,8 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                 id="owner"
                 name="owner"
                 placeholder="Owner"
-                defaultValue={simulation.owner}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                defaultValue={simulation?.owner}
               />
               <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
@@ -152,16 +193,16 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
 
         {/* Model Description */}
         <div className="mb-4" hidden={isVisible}>
-          <label htmlFor="modelDescription" className="mb-2 block text-sm font-medium">
+          <label htmlFor="description" className="mb-2 block text-sm font-medium">
             Model Description
           </label>
           <div className="relative mt-2 rounded-md">
             <div className="relative">
               <textarea
-                id="modelDescription"
-                name="modelDescription"
-                defaultValue={simulation.description}
+                id="description"
+                name="description"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                defaultValue={simulation?.description}
               />
               <DocumentTextIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
@@ -181,8 +222,8 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                           id="startDate"
                           name="startDate"
                           placeholder="Start Date"
-                          defaultValue={simulation.created}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          defaultValue={simulation?.scenario_properties.start_date}
                       />
                       <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -190,7 +231,7 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
 
               <div className="relative mt-2 rounded-md">
                   <label htmlFor="simulationDuration" className="mb-2 block text-sm font-medium">
-                      Simulation Duration (Years)
+                      Simulation Duration (days)
                   </label>
                   <div className="relative">
                       <input
@@ -198,8 +239,8 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                           name="simulationDuration"
                           type="number"
                           placeholder="Simulation Duration"
-                          defaultValue={simulation.scenario_properties.simulation_duration}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          defaultValue={simulation?.scenario_properties.simulation_duration}
                       />
                       <ClockIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -215,8 +256,8 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                           name="steps"
                           type="number"
                           placeholder="100"
-                          defaultValue={simulation.scenario_properties.steps}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          defaultValue={simulation?.scenario_properties.steps}
                       />
                       <ListBulletIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -232,8 +273,8 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                           name="maxAltitude"
                           type="number"
                           placeholder="2000"
-                          defaultValue={simulation.scenario_properties.max_altitude}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          defaultValue={simulation?.scenario_properties.max_altitude}
                       />
                       <ArrowUpIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -249,8 +290,8 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                           name="minAltitude"
                           type="number"
                           placeholder="500"
-                          defaultValue={simulation.scenario_properties.min_altitude}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          defaultValue={simulation?.scenario_properties.min_altitude}
                       />
                       <ArrowDownIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -266,8 +307,8 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                           name="nShells"
                           type="number"
                           placeholder="10"
-                          defaultValue={simulation.scenario_properties.n_shells}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          defaultValue={simulation?.scenario_properties.n_shells}
                       />
                       <WifiIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -283,8 +324,8 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                           name="integrator"
                           type="text"
                           placeholder="BDF"
-                          defaultValue={simulation.scenario_properties.integrator}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          defaultValue={simulation?.scenario_properties.integrator}
                       />
                       <CogIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -300,8 +341,8 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                           name="densityModel"
                           type="text"
                           placeholder="JB2008_dens_func"
-                          defaultValue={simulation.scenario_properties.density_model}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          defaultValue={simulation?.scenario_properties.density_model}
                       />
                       <CloudIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -317,8 +358,8 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                           name="launchCoefficient"
                           type="number"
                           placeholder="0.1"
-                          defaultValue={simulation.scenario_properties.LC}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          defaultValue={simulation?.scenario_properties.LC}
                       />
                       <RocketLaunchIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -334,20 +375,16 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                           name="impactVelocity"
                           type="number"
                           placeholder="10"
-                            defaultValue={simulation.scenario_properties.v_imp}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          defaultValue={simulation?.scenario_properties.v_imp}
                       />
                       <ArrowsPointingInIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
               </div>
-
           </fieldset>
         </div>
       </div>
 
-      <div className="mt-6 justify-center flex gap-4">
-        
-      </div>
 
       <Table>
         <TableCaption>
@@ -363,17 +400,16 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
               <div className="grid gap-4 py-4">
                 <form onSubmit={handleAddSpecies}>
                 <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                    <Label htmlFor="speciesName" className="text-right">
-                        Name
-                    </Label>
-                    <Input
-                        id="speciesName"
-                        defaultValue="Debris"
-                        className="col-span-2"
-                        required={true}
-                        value={newSpecies?.sym_name}
-                        onChange={(e) => setNewSpecies({ ...newSpecies, sym_name: e.target.value })}
-                    />
+                  <Label htmlFor="speciesName" className="text-right">
+                    Name
+                  </Label>
+                  <Input
+                    id="speciesName"
+                    className="col-span-2"
+                    required={true}
+                    defaultValue={newSpecies?.sym_name?.toString() ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, sym_name: e.target.value })}
+                  />
                 </div>
                   <div className="grid grid-cols-4 items-center gap-4 mt-3">
                     <Label htmlFor="cd" className="text-right">
@@ -384,7 +420,7 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                       type='number'
                       className="col-span-1"
                       required={true}
-                      value={newSpecies?.Cd}
+                      defaultValue={newSpecies?.Cd}
                       onChange={(e) => setNewSpecies({ ...newSpecies, Cd: e.target.value })}
                     />
                   </div>
@@ -423,7 +459,7 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                         type='number'
                         className="col-span-1"
                         defaultValue={newSpecies?.A?.toString() ?? ''}
-                        onChange={(e) => setNewSpecies({ ...newSpecies, area: e.target.value } as Species)}
+                        onChange={(e) => setNewSpecies({ ...newSpecies, A: parseFloat(e.target.value) } as Species)}
                     />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4 mt-3">
@@ -456,11 +492,33 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
                     <Input
                         id="pmd"
                         type='number'
-                        defaultValue="0.9"
                         required={true}
-                        value={newSpecies?.Pm ?? ''}
+                        defaultValue={newSpecies?.Pm ?? ''}
                         onChange={(e) => setNewSpecies({ ...newSpecies, Pm: parseFloat(e.target.value) })}
                     />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                    <Label htmlFor="launchFunction" className="text-right">
+                        Launch Function
+                    </Label>
+                    {/* <Input
+                        id="launchFunction"
+                        type='dropdown'
+                        required={false}
+                        defaultValue={newSpecies?.launch_func ?? ''}
+                        onChange={(e) => setNewSpecies({ ...newSpecies, launch_func: e.target.value })}
+                    /> */}
+                    <Select>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue id="launchFunction" placeholder="constant"/>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Fruits</SelectLabel>
+                          <SelectItem value="constant">constant</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                 </div>
                   <div className="mt-6 flex justify-end gap-4 mt-3">
                     <ShadButton type="submit">{isEditing ? 'Update Species' : 'Add Species'}</ShadButton>
@@ -483,7 +541,7 @@ export default function EditSimulationForm({ simulation }: { simulation: Simulat
           </TableRow>
         </TableHeader>
         <TableBody>
-          {species.map((specie, index) => (
+          {Array.isArray(species) && species.map((specie, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium">{specie.sym_name}</TableCell>
                 <TableCell>{specie.Cd}</TableCell>

@@ -1,7 +1,8 @@
-import Form from '@/app/ui/simulations/edit-form';
 import Breadcrumbs from '@/app/ui/simulations/breadcrumbs';
 import { fetchSimulationById } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
+import Form from '@/app/ui/simulations/create-form';
+import { fetchSimulationNames } from '@/app/lib/data';
 import EditSimulationForm from '@/app/ui/simulations/edit-form';
 
 // Here you can also import the templates if needed. 
@@ -16,6 +17,8 @@ export default async function Page({ params }: { params: { id: string } }) {
     notFound();
     }
 
+    const simulation_names = await fetchSimulationNames();
+
   return (
     <main>
       <Breadcrumbs
@@ -28,7 +31,8 @@ export default async function Page({ params }: { params: { id: string } }) {
           },
         ]}
       />
-      <EditSimulationForm simulation={simulation}/>
+      <EditSimulationForm 
+        simulation={simulation} sim_names={[]} edit={true} /> 
     </main>
   );
 }

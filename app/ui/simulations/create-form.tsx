@@ -1,6 +1,6 @@
 'use client';
 import { FormEvent, useState } from 'react'
-import { CustomerField, SimulationForm } from '@/app/lib/definitions';
+import { CustomerField, SimulationForm, SimulationNames } from '@/app/lib/definitions';
 import { Switch } from "@/components/ui/switch"
 import Link from 'next/link';
 import {
@@ -41,11 +41,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from '@/app/ui/button';
 import { Button as ShadButton } from '@/components/ui/button';
-import { createSimulation } from '@/app/lib/actions';
+import { createSimulation, updateSimulation} from '@/app/lib/actions';
 import { Species } from '@/app/lib/definitions';
 const { v4: uuidv4 } = require('uuid');
+import { useEffect } from 'react';
 
-export default function Form({ customers }: { customers: CustomerField[] }) {
+export default function Form({ sim_names, simulation, edit }: { sim_names: SimulationNames[], simulation: SimulationForm | null, edit: boolean}) {
+  // Creating one form that handle both edit and new based on whether the edit flag is set to true
+  
   // Create a hook that hides certain fields based on the toggle
   const [isVisible, setVisibility] = useState(true);
 
@@ -53,41 +56,50 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
     setVisibility(!isVisible);
   }
 
+  // This will handle when new species are added to the simulation
   const [species, setSpecies] = useState<Species[]>([]);
   const [newSpecies, setNewSpecies] = useState<Species | null>(null);
 
+
+  useEffect(() => {
+    setSpecies(edit && simulation ? simulation.species : []);
+  }, [edit, simulation]);
+  
+
   const [isEditing, setIsEditing] = useState(false);
+  const [currentSpecies, setCurrentSpecies] = useState(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingSpecies, setEditingSpecies] = useState<Species | null>(null);
 
   const handleEditSpecies = (e: React.FormEvent, species: Species, index: number) => {
-    e.preventDefault();
-    setIsEditing(true);
-    setNewSpecies(species);
-    setEditingIndex(index);
-    setIsDialogOpen(true); 
+      e.preventDefault();
+      setIsEditing(true);
+      setNewSpecies({ ...species });
+      setEditingIndex(index);
+      setIsDialogOpen(true); 
   };
-
+  
   const handleAddSpecies = (e: React.FormEvent) => {
-    e.preventDefault();
-  
-    if (isEditing) {
-        if (editingIndex !== null && newSpecies !== null) {
-            const newSpeciesList = [...species];
-            newSpeciesList[editingIndex] = newSpecies;
-            setSpecies(newSpeciesList);
-            setEditingIndex(null);
-        }
-    } else {
-        if (newSpecies !== null) {
-            setSpecies([...species, newSpecies]);
-        }
-    }
-  
-    setNewSpecies(null);
-    setIsEditing(false);
-};
-
+      e.preventDefault();
+    
+      if (isEditing) {
+          if (editingIndex !== null && newSpecies !== null) {
+              const newSpeciesList = [...species];
+              newSpeciesList[editingIndex] = newSpecies;
+              setSpecies(newSpeciesList);
+              setEditingIndex(null);
+          }
+      } else {
+          if (newSpecies !== null) {
+              console.log(newSpecies)
+              setSpecies([...species, newSpecies]);
+          }
+      }
+    
+      setNewSpecies(null);
+      setIsEditing(false);
+  };
 
 
   const closeDialog = () => {
@@ -101,7 +113,8 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
     setSpecies(newSpecies);
   };
 
-  const createSim = (FormData: FormData) => {
+
+  const handleSim = (FormData: FormData) => {
     // This function will take the current simulation data and format it correctly. 
     const form = FormData;
     const sim: SimulationForm = {
@@ -127,6 +140,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
       species: species,
       modified: new Date().toISOString(),
     }
+
     createSimulation(sim);
   }
 
@@ -136,7 +150,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
       <label className="text-sm font-medium">Advanced Options</label>
       <Switch className="ml-2" onCheckedChange={toggleVisibility}/>
     </div> 
-    <form action={createSim}>     
+    <form action={handleSim}>     
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Simulation Name */}
         <div className="mb-4">
@@ -149,6 +163,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
               name="simulationName"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               placeholder="Name"
+              required={true}
             >
             </input>
             <CodeBracketIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
@@ -167,6 +182,8 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                 name="owner"
                 placeholder="Owner"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                defaultValue={edit ? simulation?.owner : ''}
+                required={true}
               />
               <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
@@ -184,6 +201,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                 id="description"
                 name="description"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                required={true}
               />
               <DocumentTextIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
@@ -204,14 +222,15 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                           name="startDate"
                           placeholder="Start Date"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                      />
+                          required={true}
+                        />
                       <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
               </div>
 
               <div className="relative mt-2 rounded-md">
                   <label htmlFor="simulationDuration" className="mb-2 block text-sm font-medium">
-                      Simulation Duration (days)
+                      Simulation Duration (years)
                   </label>
                   <div className="relative">
                       <input
@@ -220,6 +239,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                           type="number"
                           placeholder="Simulation Duration"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          required={true}
                       />
                       <ClockIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -236,6 +256,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                           type="number"
                           placeholder="100"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          required={true}
                       />
                       <ListBulletIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -252,6 +273,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                           type="number"
                           placeholder="2000"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                          required={true}
                       />
                       <ArrowUpIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -268,7 +290,8 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                           type="number"
                           placeholder="500"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                      />
+                          required={true}
+                        />
                       <ArrowDownIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
               </div>
@@ -283,6 +306,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                           name="nShells"
                           type="number"
                           placeholder="10"
+                          required={true}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
                       <WifiIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -298,7 +322,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                           id="integrator"
                           name="integrator"
                           type="text"
-                          placeholder="BDF"
+                          defaultValue="BDF"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
                       <CogIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -314,7 +338,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                           id="densityModel"
                           name="densityModel"
                           type="text"
-                          placeholder="JB2008_dens_func"
+                          defaultValue="JB2008_dens_func"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
                       <CloudIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -330,7 +354,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                           id="launchCoefficient"
                           name="launchCoefficient"
                           type="number"
-                          placeholder="0.1"
+                          defaultValue="0.1"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
                       <RocketLaunchIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -339,14 +363,14 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
 
               <div className="relative mt-2 rounded-md" hidden={isVisible}>
                   <label htmlFor="impactVelocity" className="mb-2 block text-sm font-medium">
-                      Impact Velocity
+                      Impact Velocity (km/s)
                   </label>
                   <div className="relative">
                       <input
                           id="impactVelocity"
                           name="impactVelocity"
                           type="number"
-                          placeholder="10"
+                          defaultValue="10"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
                       <ArrowsPointingInIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -355,17 +379,12 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
 
           </fieldset>
         </div>
-      </div>
 
-      <div className="mt-6 justify-center flex gap-4">
-        
-      </div>
-
-      <Table>
+        <Table>
         <TableCaption>
           <Dialog open={isDialogOpen} onOpenChange={closeDialog}>
-            <DialogTrigger>{isEditing ? 'Edit Species' : 'Add New Species'}</DialogTrigger>
-              <DialogContent>
+            <DialogTrigger>{isEditing ? 'Edit Species' : '+ Add New Species +'}</DialogTrigger>
+              <DialogContent >
                 <DialogHeader>
                   <DialogTitle>{isEditing ? 'Edit Species' : 'New Species'}</DialogTitle>
                   <DialogDescription>
@@ -375,17 +394,17 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
               <div className="grid gap-4 py-4">
                 <form onSubmit={handleAddSpecies}>
                 <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                    <Label htmlFor="speciesName" className="text-right">
-                        Name
-                    </Label>
-                    <Input
-                        id="speciesName"
-                        defaultValue="Debris"
-                        className="col-span-2"
-                        required={true}
-                        value={newSpecies?.sym_name}
-                        onChange={(e) => setNewSpecies({ ...newSpecies, sym_name: e.target.value })}
-                    />
+                  <Label htmlFor="speciesName" className="text-right">
+                    Name
+                  </Label>
+                  <Input
+                    id="speciesName"
+                    defaultValue="Debris"
+                    className="col-span-2"
+                    required={true}
+                    value={newSpecies?.sym_name?.toString() ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, sym_name: e.target.value })}
+                  />
                 </div>
                   <div className="grid grid-cols-4 items-center gap-4 mt-3">
                     <Label htmlFor="cd" className="text-right">
@@ -435,7 +454,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                         type='number'
                         className="col-span-1"
                         defaultValue={newSpecies?.A?.toString() ?? ''}
-                        onChange={(e) => setNewSpecies({ ...newSpecies, area: e.target.value } as Species)}
+                        onChange={(e) => setNewSpecies({ ...newSpecies, A: parseFloat(e.target.value) } as Species)}
                     />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4 mt-3">
@@ -474,19 +493,6 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                         onChange={(e) => setNewSpecies({ ...newSpecies, Pm: parseFloat(e.target.value) })}
                     />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                    <Label htmlFor="launchFunction" className="text-right">
-                        PMD (%)
-                    </Label>
-                    <Input
-                        id="launchFunction"
-                        type='text'
-                        defaultValue="constant"
-                        required={false}
-                        value={newSpecies?.Pm ?? ''}
-                        onChange={(e) => setNewSpecies({ ...newSpecies, Pm: parseFloat(e.target.value) })}
-                    />
-                </div>
                   <div className="mt-6 flex justify-end gap-4 mt-3">
                     <ShadButton type="submit">{isEditing ? 'Update Species' : 'Add Species'}</ShadButton>
                   </div>
@@ -508,34 +514,37 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {species.map((specie, index) => (
-              <TableRow key={index}>
-                <TableCell className="font-medium">{specie.sym_name}</TableCell>
-                <TableCell>{specie.Cd}</TableCell>
-                <TableCell>{specie.mass}</TableCell>
-                <TableCell>{specie.radius}</TableCell>
-                <TableCell>{specie.A}</TableCell>
-                <TableCell>{specie.active ? 'Yes' : 'No'}</TableCell>
-                <TableCell>{specie.drag_effected ? 'Yes' : 'No'}</TableCell>
-                <TableCell className="text-right">{specie.Pm}</TableCell>
-                <TableCell className="text-right">
-                  <button className="rounded-md border p-2 hover:bg-gray-100"
-                    onClick={(e) => handleEditSpecies(e, species[index], index)}>
-                    <span className="sr-only"></span>
-                    <PencilIcon className="w-4" />
-                  </button>
-                </TableCell>
-                <TableCell>
-                  <button className="rounded-md border p-2 hover:bg-gray-100"
-                    onClick={(e) => handleDeleteSpecies(e, index)}>
-                    <span className="sr-only"></span>
-                    <TrashIcon className="w-4" />
-                  </button>
-                </TableCell>
-              </TableRow>
-            ))}
+        {species.map((specie, index) => (
+          <TableRow key={index}>
+            <TableCell className="font-medium">{specie.sym_name}</TableCell>
+            <TableCell>{specie.Cd}</TableCell>
+            <TableCell>{specie.mass}</TableCell>
+            <TableCell>{specie.radius}</TableCell>
+            <TableCell>{specie.A}</TableCell>
+            <TableCell>{specie.active ? 'Yes' : 'No'}</TableCell>
+            <TableCell>{specie.drag_effected ? 'Yes' : 'No'}</TableCell>
+            <TableCell className="text-right">{specie.Pm}</TableCell>
+            <TableCell className="text-right">
+              <button className="rounded-md border p-2 hover:bg-gray-100"
+                onClick={(e) => handleEditSpecies(e, species[index], index)}>
+                <span className="sr-only"></span>
+                <PencilIcon className="w-4" />
+              </button>
+            </TableCell>
+            <TableCell>
+              <button className="rounded-md border p-2 hover:bg-gray-100"
+                onClick={(e) => handleDeleteSpecies(e, index)}>
+                <span className="sr-only"></span>
+                <TrashIcon className="w-4" />
+              </button>
+            </TableCell>
+          </TableRow>
+        ))}
         </TableBody>
       </Table>
+      </div>
+
+      
           
       <div className="mt-6 flex justify-end gap-4">
         <Link
@@ -544,7 +553,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
         >
           Cancel
         </Link>
-        <Button type="submit">Create Simulation</Button>
+        <Button type="submit">{edit ? "Update Simulation" : "Create Simulation"}</Button>
       </div>
     </form>
   </div>

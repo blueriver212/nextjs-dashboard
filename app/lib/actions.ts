@@ -70,6 +70,34 @@ export async function createSimulation(formData: SimulationForm) {
   
 }
 
+export async function updateSimulation(formData: SimulationForm) {
+  const scenario_properties = JSON.stringify(formData.scenario_properties);
+  const species = JSON.stringify(formData.species);
+
+  try {
+    await sql`
+      UPDATE simulations
+      SET simulation_name = ${formData.simulation_name},
+          owner = ${formData.owner},
+          status = ${formData.status},
+          description = ${formData.description},
+          modified = ${formData.modified},
+          scenario_properties = ${JSON.stringify(scenario_properties)},
+          species = ${JSON.stringify(species)}
+      WHERE id = ${formData.id}
+    `;
+  } catch (error) {
+    console.error('Database Error:', error);
+    return {
+      message: 'Database Error: Failed to Update Simulation.',
+    };
+  }
+
+  console.log('Simulation updated');
+  revalidatePath('/dashboard/simulations');
+  redirect('/dashboard/simulations');
+}
+
 export async function createInvoice(formData: FormData) {
     const { customerId, amount, status } = CreateInvoice.parse({
       customerId: formData.get('customerId'),

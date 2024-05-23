@@ -1,9 +1,9 @@
 import Form from '@/app/ui/simulations/create-form';
 import Breadcrumbs from '@/app/ui/simulations/breadcrumbs';
-import { fetchCustomers } from '@/app/lib/data';
+import { fetchSimulationNames } from '@/app/lib/data';
  
 export default async function Page() {
-  const simulations = await fetchCustomers();
+  const simulation_names = await fetchSimulationNames();
  
   return (
     <main>
@@ -17,10 +17,10 @@ export default async function Page() {
           },
         ]}
       />
-      {/* Customers refers to previously when all customers would be passed
-      I think a goo dbit functionalit for this would be to ensure that you can't name
-      2 simulations the same */}
-      <Form customers={simulations} />
+      <Form 
+        sim_names={simulation_names.map(({ id, simulation_name }) => ({ id, simulation_name }))}
+        edit={false} 
+        simulation={null} />
     </main>
   );
 }
