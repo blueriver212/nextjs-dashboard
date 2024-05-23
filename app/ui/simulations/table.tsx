@@ -1,8 +1,18 @@
 import SimulationStatus from '@/app/ui/simulations/status';
 import { formatDateToLocal } from '@/app/lib/utils';
 import { fetchFilteredSimulations } from '@/app/lib/data';
-import { DeleteSimulation, UpdateSimulation } from './buttons';
-
+import { DeleteSimulation, UpdateSimulation, ReviewSimulation } from './buttons';
+import Link from 'next/link';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 export default async function SimulationTable({
   query,
@@ -37,6 +47,7 @@ export default async function SimulationTable({
                     <p>{formatDateToLocal(simulation.created)}</p>
                   </div>
                   <div className="flex justify-end gap-2">
+                    <ReviewSimulation id={simulation.id} />
                     <UpdateSimulation id={simulation.id} />
                     <DeleteSimulation id={simulation.id} />
                   </div>
@@ -44,62 +55,54 @@ export default async function SimulationTable({
               </div>
             ))}
           </div>
-          <table className="hidden min-w-full text-gray-900 md:table">
-            <thead className="rounded-lg text-left text-sm font-normal">
-              <tr>
-                <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                  Simulation Name
-                </th>
-                <th scope="col" className="px-3 py-5 font-medium">
-                  Owner
-                </th>
-                <th scope="col" className="px-3 py-5 font-medium">
-                  Date Created
-                </th>
-                <th scope="col" className="px-3 py-5 font-medium">
-                  Description
-                </th>
-                <th scope="col" className="px-3 py-5 font-medium">
-                  Status
-                </th>
-                <th scope="col" className="relative py-3 pl-6 pr-3">
+          <Table className="hidden min-w-full text-gray-900 md:table">
+            <TableCaption>List of simulations</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="px-4 py-5 font-medium sm:pl-6">Simulation Name</TableHead>
+                <TableHead className="px-3 py-5 font-medium">Owner</TableHead>
+                <TableHead className="px-3 py-5 font-medium">Date Created</TableHead>
+                <TableHead className="px-3 py-5 font-medium">Description</TableHead>
+                <TableHead className="px-3 py-5 font-medium">Status</TableHead>
+                <TableHead className="relative py-3 pl-6 pr-3">
                   <span className="sr-only">Edit</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white">
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="bg-white">
               {simulations?.map((simulation) => (
-                <tr
+                <TableRow
                   key={simulation.id}
                   className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
                 >
-                  <td className="whitespace-nowrap py-3 pl-6 pr-3">
+                  <TableCell className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex items-center gap-3">
                       <p>{simulation.simulation_name}</p>
                     </div>
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-3">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap px-3 py-3">
                     {simulation.owner}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-3">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap px-3 py-3">
                     {formatDateToLocal(simulation.created)}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-3">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap px-3 py-3">
                     {simulation.description}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-3">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap px-3 py-3">
                     <SimulationStatus status={simulation.status} />
-                  </td>
-                  <td className="whitespace-nowrap py-3 pl-6 pr-3">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">
+                      <ReviewSimulation id={simulation.id} />
                       <UpdateSimulation id={simulation.id} />
                       <DeleteSimulation id={simulation.id} />
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>

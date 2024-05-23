@@ -1,6 +1,6 @@
 'use client';
 
-import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon, TrashIcon, ChartBarIcon} from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { deleteSimulation } from '@/app/lib/actions';
 import {
@@ -67,4 +67,15 @@ export function DeleteSimulation({ id }: { id: string }) {
       </DialogContent>
     </Dialog>
   );
+}
+
+export function ReviewSimulation({ id }: { id: string }) {
+  return (
+    <Link
+      href={`/dashboard/pyssem/${id}/results`}
+      className="rounded-md border p-2 hover:bg-gray-100"
+    >
+      <ChartBarIcon className="w-5" />
+    </Link>
+  ); 
 }
