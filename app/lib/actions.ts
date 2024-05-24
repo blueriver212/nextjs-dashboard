@@ -26,6 +26,27 @@ const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateSimulation = SimulationSchema.omit({ id: true, date: true });
 
+export async function updateSimulation( formData: SimulationForm) {
+  const { simulation_name, owner, description } = UpdateSimulation.parse({
+    simulation_name: formData.simulation_name,
+    owner: formData.owner,
+    description: formData.description
+  });
+ 
+  try {
+    await sql`
+        UPDATE simulations
+        SET simulation_name = ${simulation_name}, owner = ${owner}, description = ${description}
+        WHERE id = ${formData.id}
+      `;
+  } catch (error) {
+    return { message: 'Database Error: Failed to Update Simulation.' };
+  }
+ 
+  revalidatePath('/dashboard/simulations');
+  redirect('/dashboard/simulations');
+}
+
  
 export async function createInvoice(formData: FormData) {
     const { customerId, amount, status } = CreateInvoice.parse({
