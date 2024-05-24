@@ -6,6 +6,8 @@ import {
   DocumentDuplicateIcon,
   GlobeEuropeAfricaIcon
 } from '@heroicons/react/24/outline';
+import { Code2Icon } from 'lucide-react';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
@@ -15,7 +17,7 @@ import clsx from 'clsx';
 const links = [
   { name: 'Home', href: '/dashboard', icon: HomeIcon },
   { name: 'Simulations', href: '/dashboard/simulations', icon: GlobeEuropeAfricaIcon},
-  { name: 'Pyssem', href: '/dashboard/pyssem', icon:  GlobeEuropeAfricaIcon},
+  { name: 'Pyssem', href: '/dashboard/pyssem', icon:  Code2Icon},
   { name: 'Documentation', href: '/dashboard/documentation', icon: DocumentDuplicateIcon },
   { name: 'Contact Us', href: '/dashboard/contact', icon: UserGroupIcon },
 ];

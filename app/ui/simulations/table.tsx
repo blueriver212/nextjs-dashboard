@@ -1,7 +1,7 @@
 import SimulationStatus from '@/app/ui/simulations/status';
 import { formatDateToLocal } from '@/app/lib/utils';
 import { fetchFilteredSimulations } from '@/app/lib/data';
-import { DeleteSimulation, UpdateSimulation, ReviewSimulation } from './buttons';
+import { DeleteSimulation, UpdateSimulation, ReviewSimulation, RunSimulation, StopSimulation } from './buttons';
 import Link from 'next/link';
 import {
   Table,
@@ -46,8 +46,11 @@ export default async function SimulationTable({
                   <div>
                     <p>{formatDateToLocal(simulation.created)}</p>
                   </div>
-                  <div className="flex justify-end gap-2">
-                    <ReviewSimulation id={simulation.id} />
+                  <div className="flex justify-end gap-3">
+                    {simulation.status === 'completed' && <ReviewSimulation id={simulation.id} />}
+                    {simulation.status === 'not started' && <RunSimulation id={simulation.id} />}
+                    {simulation.status === 'failed' && <RunSimulation id={simulation.id} />}
+                    {simulation.status === 'in progress' && <StopSimulation id={simulation.id} />}
                     <UpdateSimulation id={simulation.id} />
                     <DeleteSimulation id={simulation.id} />
                   </div>
@@ -93,11 +96,14 @@ export default async function SimulationTable({
                     <SimulationStatus status={simulation.status} />
                   </TableCell>
                   <TableCell className="whitespace-nowrap py-3 pl-6 pr-3">
-                    <div className="flex justify-end gap-3">
-                      <ReviewSimulation id={simulation.id} />
-                      <UpdateSimulation id={simulation.id} />
-                      <DeleteSimulation id={simulation.id} />
-                    </div>
+                  <div className="flex justify-end gap-3">
+                    {simulation.status === 'completed' && <ReviewSimulation id={simulation.id} />}
+                    {simulation.status === 'not started' && <RunSimulation id={simulation.id} />}
+                    {simulation.status === 'failed' && <RunSimulation id={simulation.id} />}
+                    {simulation.status === 'in progress' && <StopSimulation id={simulation.id} />}
+                    <UpdateSimulation id={simulation.id} />
+                    <DeleteSimulation id={simulation.id} />
+                  </div>
                   </TableCell>
                 </TableRow>
               ))}

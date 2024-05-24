@@ -1,6 +1,9 @@
 'use client';
 
-import { PencilIcon, PlusIcon, TrashIcon, ChartBarIcon} from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon, 
+  TrashIcon, ChartBarIcon, 
+  PlayIcon, StopIcon
+} from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { deleteSimulation } from '@/app/lib/actions';
 import {
@@ -15,7 +18,6 @@ import { Button } from "@/components/ui/button"
 import { useState } from 'react';
 
 
-// THESE ALL NEED EDITING!!!
 export function CreateSimulation() {
   return (
     <Link
@@ -75,7 +77,31 @@ export function ReviewSimulation({ id }: { id: string }) {
       href={`/dashboard/pyssem/${id}/results`}
       className="rounded-md border p-2 hover:bg-gray-100"
     >
-      <ChartBarIcon className="w-5" />
+      <ChartBarIcon className="w-5 " />
     </Link>
   ); 
+}
+
+
+export function RunSimulation({ id }: { id: string }) {
+  return (
+    <Link
+      href={`/dashboard/simulations/${id}/run`}
+      className="rounded-md border p-2 hover:bg-gray-100"
+    >
+      <PlayIcon className="w-5" fill="lightgreen" color='lightgreen' />
+    </Link>
+  );
+}
+
+
+export function StopSimulation({ id }: { id: string }) {
+  return (
+    <Link
+      href={`/dashboard/simulations/${id}/stop`}
+      className="rounded-md border p-2 hover:bg-gray-100"
+    >
+      <StopIcon className="w-5" fill="red" color="red"/>
+    </Link>
+  );
 }
