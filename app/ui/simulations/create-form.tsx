@@ -82,6 +82,8 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
   
   const handleAddSpecies = (e: React.FormEvent) => {
       e.preventDefault();
+      e.stopPropagation();
+
     
       if (isEditing) {
           if (editingIndex !== null && newSpecies !== null) {
@@ -113,10 +115,17 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
     setSpecies(newSpecies);
   };
 
+  const handleSim = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    console.log(form)
 
-  const handleSim = (FormData: FormData) => {
+    // Handle the none required fields
+    if (form.get('description') === null) {
+      form.set('description', '');
+    }
+    
     // This function will take the current simulation data and format it correctly. 
-    const form = FormData;
     const sim: SimulationForm = {
       id: uuidv4(),
       simulation_name: form.get('simulationName') as string,
@@ -150,7 +159,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
       <label className="text-sm font-medium">Advanced Options</label>
       <Switch className="ml-2" onCheckedChange={toggleVisibility}/>
     </div> 
-    <form action={handleSim}>     
+    <form onSubmit={handleSim}>     
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Simulation Name */}
         <div className="mb-4">
@@ -201,7 +210,8 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                 id="description"
                 name="description"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                required={true}
+                required={false}
+                placeholder=' '
               />
               <DocumentTextIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
@@ -237,7 +247,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="simulationDuration"
                           name="simulationDuration"
                           type="number"
-                          placeholder="Simulation Duration"
+                          defaultValue="100"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                           required={true}
                       />
@@ -254,7 +264,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="steps"
                           name="steps"
                           type="number"
-                          placeholder="100"
+                          defaultValue="100"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                           required={true}
                       />
@@ -271,7 +281,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="maxAltitude"
                           name="maxAltitude"
                           type="number"
-                          placeholder="2000"
+                          defaultValue="2000"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                           required={true}
                       />
@@ -288,7 +298,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="minAltitude"
                           name="minAltitude"
                           type="number"
-                          placeholder="500"
+                          defaultValue="500"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                           required={true}
                         />
@@ -305,7 +315,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="nShells"
                           name="nShells"
                           type="number"
-                          placeholder="10"
+                          defaultValue="10"
                           required={true}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
@@ -393,109 +403,109 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                 </DialogHeader>
               <div className="grid gap-4 py-4">
                 <form onSubmit={handleAddSpecies}>
-                <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                  <Label htmlFor="speciesName" className="text-right">
-                    Name
-                  </Label>
-                  <Input
-                    id="speciesName"
-                    defaultValue="Debris"
-                    className="col-span-2"
-                    required={true}
-                    value={newSpecies?.sym_name?.toString() ?? ''}
-                    onChange={(e) => setNewSpecies({ ...newSpecies, sym_name: e.target.value })}
-                  />
-                </div>
                   <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                    <Label htmlFor="cd" className="text-right">
-                      Cd
+                    <Label htmlFor="speciesName" className="text-right">
+                      Name
                     </Label>
                     <Input
-                      id="cd"
-                      type='number'
-                      className="col-span-1"
+                      id="speciesName"
+                      defaultValue="Debris"
+                      className="col-span-2"
                       required={true}
-                      value={newSpecies?.Cd}
-                      onChange={(e) => setNewSpecies({ ...newSpecies, Cd: e.target.value })}
+                      value={newSpecies?.sym_name?.toString() ?? ''}
+                      onChange={(e) => setNewSpecies({ ...newSpecies, sym_name: e.target.value })}
                     />
                   </div>
-                <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                    <Label htmlFor="mass" className="text-right">
-                        Mass (kg)
-                    </Label>
-                    <Input
-                        id="mass"
-                        type='text'
-                        className="col-span-1"
-                        required={true}
-                        defaultValue={newSpecies?.mass?.toString()}
-                        onChange={(e) => setNewSpecies({ ...newSpecies, mass: parseFloat(e.target.value) })}
-                    />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                    <Label htmlFor="radius" className="text-right">
-                        Radius (m)
-                    </Label>
-                    <Input
-                        id="radius"
-                        type='number'
-                        required={true}
-                        className="col-span-1"
-                        defaultValue={newSpecies?.radius?.toString() ?? ''}
-                        onChange={(e) => setNewSpecies({ ...newSpecies, radius: parseFloat(e.target.value) })}
-                    />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                    <Label htmlFor="area" className="text-right">
-                        Area (m)
-                    </Label>
-                    <Input
-                        id="area"
+                    <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                      <Label htmlFor="cd" className="text-right">
+                        Cd
+                      </Label>
+                      <Input
+                        id="cd"
                         type='number'
                         className="col-span-1"
-                        defaultValue={newSpecies?.A?.toString() ?? ''}
-                        onChange={(e) => setNewSpecies({ ...newSpecies, A: parseFloat(e.target.value) } as Species)}
-                    />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                    <Label htmlFor="active" className="text-right">
-                        Active
-                    </Label>
-                    <Switch
-                        id="active"
-                        className="col-span-3"
-                        defaultValue={newSpecies?.active?.toString() ?? ''}
-                        onCheckedChange={() => newSpecies && setNewSpecies({ ...newSpecies, active: !newSpecies.active })}
-                    />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                    <Label htmlFor="drag" className="text-right">
-                        Drag Effected?
-                    </Label>
-                    <Switch
-                        defaultChecked={true}
-                        id="drag"
-                        className="col-span-1"
-                        checked={newSpecies?.drag_effected}
-                        onCheckedChange={() => setNewSpecies({ ...newSpecies, drag_effected: !newSpecies?.drag_effected })}
-                    />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                    <Label htmlFor="pmd" className="text-right">
-                        PMD (%)
-                    </Label>
-                    <Input
-                        id="pmd"
-                        type='number'
-                        defaultValue="0.9"
                         required={true}
-                        value={newSpecies?.Pm ?? ''}
-                        onChange={(e) => setNewSpecies({ ...newSpecies, Pm: parseFloat(e.target.value) })}
-                    />
-                </div>
-                  <div className="mt-6 flex justify-end gap-4 mt-3">
-                    <ShadButton type="submit">{isEditing ? 'Update Species' : 'Add Species'}</ShadButton>
+                        value={newSpecies?.Cd}
+                        onChange={(e) => setNewSpecies({ ...newSpecies, Cd: e.target.value })}
+                      />
+                    </div>
+                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                      <Label htmlFor="mass" className="text-right">
+                          Mass (kg)
+                      </Label>
+                      <Input
+                          id="mass"
+                          type='text'
+                          className="col-span-1"
+                          required={true}
+                          defaultValue={newSpecies?.mass?.toString()}
+                          onChange={(e) => setNewSpecies({ ...newSpecies, mass: parseFloat(e.target.value) })}
+                      />
                   </div>
+                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                      <Label htmlFor="radius" className="text-right">
+                          Radius (m)
+                      </Label>
+                      <Input
+                          id="radius"
+                          type='number'
+                          required={true}
+                          className="col-span-1"
+                          defaultValue={newSpecies?.radius?.toString() ?? ''}
+                          onChange={(e) => setNewSpecies({ ...newSpecies, radius: parseFloat(e.target.value) })}
+                      />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                      <Label htmlFor="area" className="text-right">
+                          Area (m)
+                      </Label>
+                      <Input
+                          id="area"
+                          type='number'
+                          className="col-span-1"
+                          defaultValue={newSpecies?.A?.toString() ?? ''}
+                          onChange={(e) => setNewSpecies({ ...newSpecies, A: parseFloat(e.target.value) } as Species)}
+                      />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                      <Label htmlFor="active" className="text-right">
+                          Active
+                      </Label>
+                      <Switch
+                          id="active"
+                          className="col-span-3"
+                          defaultValue={newSpecies?.active?.toString() ?? ''}
+                          onCheckedChange={() => newSpecies && setNewSpecies({ ...newSpecies, active: !newSpecies.active })}
+                      />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                      <Label htmlFor="drag" className="text-right">
+                          Drag Effected?
+                      </Label>
+                      <Switch
+                          defaultChecked={true}
+                          id="drag"
+                          className="col-span-1"
+                          checked={newSpecies?.drag_effected}
+                          onCheckedChange={() => setNewSpecies({ ...newSpecies, drag_effected: !newSpecies?.drag_effected })}
+                      />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                      <Label htmlFor="pmd" className="text-right">
+                          PMD (%)
+                      </Label>
+                      <Input
+                          id="pmd"
+                          type='number'
+                          defaultValue="0.9"
+                          required={true}
+                          value={newSpecies?.Pm ?? ''}
+                          onChange={(e) => setNewSpecies({ ...newSpecies, Pm: parseFloat(e.target.value) })}
+                      />
+                  </div>
+                    <div className="mt-6 flex justify-end gap-4 mt-3">
+                      <ShadButton type="submit">{isEditing ? 'Update Species' : 'Add Species'}</ShadButton>
+                    </div>
                 </form>
               </div>
             </DialogContent>

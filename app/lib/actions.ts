@@ -73,31 +73,28 @@ export async function createInvoice(formData: FormData) {
     redirect('/dashboard/invoices');
   }
 
-export async function createSimulation(formData: FormData) {
-  const { simulation_name, owner, description } = SimulationSchema.parse({
-    simulation_name: formData.get('simulation_name'),
-    owner: formData.get('owner'),
-    description: formData.get('description')
-    // scenario_properties: formData.get('scenario_properties'),
-    // species: formData.get('species'),
-  });
-  
-  const date = new Date().toISOString().split('T')[0];
-  
-  try {
-    await sql`
-      INSERT INTO simulations (simulation_name, owner, description, created)
-      VALUES (${simulation_name}, ${owner}, ${description}, ${date})
-    `;
-  } catch (error) {
-    return {
-      message: 'Database Error: Failed to Create Simulation.',
-    };
+export async function createSimulation(formData: SimulationForm) {
+    // Status is not started by default
+    const status = 'not started'
+    try {
+      await sql`
+        INSERT INTO simulations (id, simulation_name, owner, description, 
+          scenario_properties, species, created, modified, status
+        )
+        VALUES (${formData.id}, ${formData.simulation_name}, ${formData.owner}, ${formData.description},
+          ${JSON.stringify(formData.scenario_properties)}, ${JSON.stringify(formData.species)}, 
+          ${formData.created}, ${formData.modified}, ${status})
+      `;
+    } catch (error) {
+      console.error('Database Error: Failed to Create Simulation.', error);
+      return {
+        message: 'Database Error: Failed to Create Simulation.',
+      };
+    } finally {
+      revalidatePath('/dashboard/simulations');
+      redirect('/dashboard/simulations');
+    }
   }
-  
-  revalidatePath('/dashboard/simulations');
-  redirect('/dashboard/simulations');
-}
 
   export async function updateInvoice(id: string, formData: FormData) {
     const { customerId, amount, status } = UpdateInvoice.parse({
