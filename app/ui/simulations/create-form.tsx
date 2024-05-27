@@ -1,6 +1,6 @@
 'use client';
 import { FormEvent, useState } from 'react'
-import { CustomerField, SimulationForm, SimulationNames } from '@/app/lib/definitions';
+import { SimulationForm, SimulationNames } from '@/app/lib/definitions';
 import { Switch } from "@/components/ui/switch"
 import Link from 'next/link';
 import {

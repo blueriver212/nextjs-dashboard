@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect } from 'react'
-import { CustomerField } from '@/app/lib/definitions';
 import { Switch } from "@/components/ui/switch"
 import Link from 'next/link';
 import {

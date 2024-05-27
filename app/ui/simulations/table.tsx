@@ -1,5 +1,4 @@
 import SimulationStatus from '@/app/ui/simulations/status';
-import { formatDateToLocal } from '@/app/lib/utils';
 import { fetchFilteredSimulations } from '@/app/lib/data';
 import { DeleteSimulation, UpdateSimulation, ReviewSimulation, RunSimulation, StopSimulation } from './buttons';
 import Link from 'next/link';
@@ -43,9 +42,6 @@ export default async function SimulationTable({
                   <SimulationStatus status={simulation.status} />
                 </div>
                 <div className="flex w-full items-center justify-between pt-4">
-                  <div>
-                    <p>{formatDateToLocal(simulation.created)}</p>
-                  </div>
                   <div className="flex justify-end gap-3">
                     {simulation.status === 'completed' && <ReviewSimulation id={simulation.id} />}
                     {simulation.status === 'not started' && <RunSimulation id={simulation.id} />}
@@ -85,9 +81,6 @@ export default async function SimulationTable({
                   </TableCell>
                   <TableCell className="whitespace-nowrap px-3 py-3">
                     {simulation.owner}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap px-3 py-3">
-                    {formatDateToLocal(simulation.created)}
                   </TableCell>
                   <TableCell className="whitespace-nowrap px-3 py-3">
                     {simulation.description}
