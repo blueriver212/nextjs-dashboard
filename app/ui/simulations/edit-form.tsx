@@ -60,7 +60,9 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
 
 
   useEffect(() => {
-    console.log(simulation)
+    // print the simluation.species type to the console
+    console.log('ime here')
+    console.log(simulation?.species)
     setSpecies(edit && simulation ? simulation.species : []);
   }, [edit, simulation]);
   
