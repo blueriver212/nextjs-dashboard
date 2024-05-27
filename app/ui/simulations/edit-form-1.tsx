@@ -46,7 +46,9 @@ import { Species } from '@/app/lib/definitions';
 const { v4: uuidv4 } = require('uuid');
 import { useEffect } from 'react';
 
-export default function Form({ sim_names, simulation, edit }: { sim_names: SimulationNames[], simulation: SimulationForm | null, edit: boolean}) { 
+export default function Form({ sim_names, simulation, edit }: { sim_names: SimulationNames[], simulation: SimulationForm | null, edit: boolean}) {
+  // Creating one form that handle both edit and new based on whether the edit flag is set to true
+  
   // Create a hook that hides certain fields based on the toggle
   const [isVisible, setVisibility] = useState(true);
 
@@ -60,7 +62,6 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
 
 
   useEffect(() => {
-    console.log(simulation)
     setSpecies(edit && simulation ? simulation.species : []);
   }, [edit, simulation]);
   
@@ -82,6 +83,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
   const handleAddSpecies = (e: React.FormEvent) => {
       e.preventDefault();
       e.stopPropagation();
+
     
       if (isEditing) {
           if (editingIndex !== null && newSpecies !== null) {
@@ -125,7 +127,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
     
     // This function will take the current simulation data and format it correctly. 
     const sim: SimulationForm = {
-      id: simulation?.id ?? uuidv4(),
+      id: uuidv4(),
       simulation_name: form.get('simulationName') as string,
       owner: form.get('owner') as string,
       description: form.get('description') as string,
@@ -148,7 +150,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
       modified: new Date().toISOString(),
     }
 
-    updateSimulation(sim);
+    createSimulation(sim);
   }
 
   return (
@@ -171,7 +173,6 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               placeholder="Name"
               required={true}
-              defaultValue={edit ? simulation?.simulation_name : ''}
             >
             </input>
             <CodeBracketIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
@@ -210,7 +211,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                 name="description"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 required={false}
-                defaultValue={edit ? simulation?.description : ''}
+                placeholder=' '
               />
               <DocumentTextIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
@@ -232,7 +233,6 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           placeholder="Start Date"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                           required={true}
-                          defaultValue={edit ? simulation?.scenario_properties.start_date : ''}
                         />
                       <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -247,7 +247,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="simulationDuration"
                           name="simulationDuration"
                           type="number"
-                          defaultValue={edit ? simulation?.scenario_properties.simulation_duration : '100'}
+                          defaultValue="100"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                           required={true}
                       />
@@ -264,7 +264,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="steps"
                           name="steps"
                           type="number"
-                          defaultValue={edit ? simulation?.scenario_properties.steps : '100'}
+                          defaultValue="100"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                           required={true}
                       />
@@ -281,7 +281,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="maxAltitude"
                           name="maxAltitude"
                           type="number"
-                          defaultValue={edit ? simulation?.scenario_properties.max_altitude : '2000'}
+                          defaultValue="2000"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                           required={true}
                       />
@@ -298,7 +298,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="minAltitude"
                           name="minAltitude"
                           type="number"
-                          defaultValue={edit ? simulation?.scenario_properties.min_altitude : '500'}
+                          defaultValue="500"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                           required={true}
                         />
@@ -315,7 +315,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="nShells"
                           name="nShells"
                           type="number"
-                          defaultValue={edit ? simulation?.scenario_properties.n_shells : '10'}
+                          defaultValue="10"
                           required={true}
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
@@ -332,7 +332,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="integrator"
                           name="integrator"
                           type="text"
-                          defaultValue={edit ? simulation?.scenario_properties.integrator : 'BDF'}
+                          defaultValue="BDF"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
                       <CogIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -348,7 +348,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="densityModel"
                           name="densityModel"
                           type="text"
-                          defaultValue={edit ? simulation?.scenario_properties.density_model : 'JB2008_dens_func'}
+                          defaultValue="JB2008_dens_func"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
                       <CloudIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -364,7 +364,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="launchCoefficient"
                           name="launchCoefficient"
                           type="number"
-                          defaultValue={edit ? simulation?.scenario_properties.LC : '0.9'}
+                          defaultValue="0.1"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
                       <RocketLaunchIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -380,7 +380,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="impactVelocity"
                           name="impactVelocity"
                           type="number"
-                          defaultValue={edit ? simulation?.scenario_properties.v_imp : '10'}
+                          defaultValue="10"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
                       <ArrowsPointingInIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />

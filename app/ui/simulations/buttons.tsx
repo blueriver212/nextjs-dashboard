@@ -51,9 +51,9 @@ export function DeleteSimulation({ id }: { id: string }) {
   };
  
   return (
-    <Dialog>
-      <DialogTrigger>
-        <TrashIcon className="w-4" />
+    <Dialog open={modalIsOpen} onOpenChange={() => setModalIsOpen(true)}>
+      <DialogTrigger className='rounded-md border p-2 hover:bg-gray-100'>
+        <TrashIcon className="w-5" />
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -62,7 +62,6 @@ export function DeleteSimulation({ id }: { id: string }) {
             Are you sure you want to delete this simulation? This action cannot be undone.
           </DialogDescription>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {/* <Button style={{ backgroundColor: 'grey' }} onClick={() => setModalIsOpen(false)}>No</Button> */}
             <Button style={{ backgroundColor: 'red', alignItems: 'right' }} onClick={handleDelete}>Yes</Button>
           </div>
         </DialogHeader>

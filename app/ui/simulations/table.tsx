@@ -55,16 +55,15 @@ export default async function SimulationTable({
             ))}
           </div>
           <Table className="hidden min-w-full text-gray-900 md:table">
-            <TableCaption>List of simulations</TableCaption>
             <TableHeader>
               <TableRow>
                 <TableHead className="px-4 py-5 font-medium sm:pl-6">Simulation Name</TableHead>
                 <TableHead className="px-3 py-5 font-medium">Owner</TableHead>
-                <TableHead className="px-3 py-5 font-medium">Date Created</TableHead>
                 <TableHead className="px-3 py-5 font-medium">Description</TableHead>
+                <TableHead className="px-3 py-5 font-medium">Date Created</TableHead>
                 <TableHead className="px-3 py-5 font-medium">Status</TableHead>
-                <TableHead className="relative py-3 pl-6 pr-3">
-                  <span className="sr-only">Edit</span>
+                <TableHead className="relative py-3 pl-6 pr-3">Actions
+                  {/* <span className="sr-only">Edit</span> */}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -84,6 +83,9 @@ export default async function SimulationTable({
                   </TableCell>
                   <TableCell className="whitespace-nowrap px-3 py-3">
                     {simulation.description}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap px-3 py-3">
+                    {simulation.created.toString() }
                   </TableCell>
                   <TableCell className="whitespace-nowrap px-3 py-3">
                     <SimulationStatus status={simulation.status} />
