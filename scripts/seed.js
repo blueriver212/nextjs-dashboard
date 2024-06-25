@@ -128,7 +128,7 @@ const simulations = [
     "description": "Lorem ipsum and all that good stuff",
     "created": "2024-01-01T12:00:00Z",
     "modified": "2024-01-01T12:00:00Z",
-    "status" : "not started",
+    "status" : "in progress",
     "scenario_properties": {
       "start_date": "01/03/2022",   
       "simulation_duration": 100,              
@@ -247,7 +247,7 @@ const simulations = [
     "description": "Lorem ipsum and all that good stuff",
     "created": "2024-01-01T12:00:00Z",
     "modified": "2024-01-01T12:00:00Z",
-    "status" : "not started",
+    "status" : "failed",
     "scenario_properties": {
       "start_date": "01/03/2022",   
       "simulation_duration": 100,              
@@ -366,7 +366,7 @@ const simulations = [
     "description": "Lorem ipsum and all that good stuff",
     "created": "2024-01-01T12:00:00Z",
     "modified": "2024-01-01T12:00:00Z",
-    "status" : "not started",
+    "status" : "completed",
     "scenario_properties": {
       "start_date": "01/03/2022",   
       "simulation_duration": 100,              
@@ -485,7 +485,7 @@ const simulations = [
     "description": "Lorem ipsum and all that good stuff",
     "created": "2024-01-01T12:00:00Z",
     "modified": "2024-01-01T12:00:00Z",
-    "status" : "not started",
+    "status" : "in progress",
     "scenario_properties": {
       "start_date": "01/03/2022",   
       "simulation_duration": 100,              

@@ -82,14 +82,48 @@ export function ReviewSimulation({ id }: { id: string }) {
 }
 
 
+// export function RunSimulation({ id }: { id: string }) {
+//   return (
+//     <Link
+//       href={`/dashboard/simulations/${id}/run`}
+//       className="rounded-md border p-2 hover:bg-gray-100"
+//     >
+//       <PlayIcon className="w-5" fill="lightgreen" color='lightgreen' />
+//     </Link>
+//   );
+// }
+
 export function RunSimulation({ id }: { id: string }) {
+  const runModel = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/runmodel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      if (response.ok) {
+        alert('Model run successfully');
+        // Handle successful response
+      } else {
+        alert('Failed to run model');
+        // Handle error response
+      }
+    } catch (error: Error) {
+      alert(error.toString());
+      // Handle network error
+    }
+  };
+
   return (
-    <Link
-      href={`/dashboard/simulations/${id}/run`}
+    <button
+      onClick={runModel}
       className="rounded-md border p-2 hover:bg-gray-100"
     >
-      <PlayIcon className="w-5" fill="lightgreen" color='lightgreen' />
-    </Link>
+      <PlayIcon className="w-5" fill="lightgreen" color="lightgreen" />
+    </button>
   );
 }
 

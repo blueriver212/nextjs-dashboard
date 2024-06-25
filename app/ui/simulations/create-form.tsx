@@ -48,6 +48,105 @@ import { useEffect } from 'react';
 
 export default function Form({ sim_names, simulation, edit }: { sim_names: SimulationNames[], simulation: SimulationForm | null, edit: boolean}) {
   // Creating one form that handle both edit and new based on whether the edit flag is set to true
+
+  const speciesTemplates = [
+    {
+      "sym_name": "S",
+      "Cd": 2.2,
+      "mass": [1250, 750, 148],
+      "radius": [4, 2, 0.5],
+      "A": "Calculated based on radius",
+      "active": true,
+      "maneuverable": true,
+      "trackable": true,
+      "deltat": [8],
+      "Pm": 0.90,
+      "alpha": 1e-5,
+      "alpha_active": 1e-5,
+      "slotted": true, 
+      "slotting_effectiveness": 1.0,
+      "drag_effected": false,
+      "launch_func": "launch_func_constant",
+      "pmd_func": "pmd_func_sat",
+      "drag_func": "drag_func_exp"
+  },
+  {
+      "sym_name": "Su",
+      "Cd": 2.2,
+      "mass": [260, 473],
+      "A": [1.6652, 13.5615],
+      "radius": [0.728045069, 2.077681285],
+      "active": true,
+      "maneuverable": true,
+      "trackable": true,
+      "deltat": [8, 8],
+      "Pm": 0.65,
+      "alpha": 1e-5,
+      "alpha_active": 1e-5,
+      "RBflag": 0,
+      "slotting_effectiveness": 1.0,
+      "drag_effected": false,
+      "launch_func": "launch_func_constant",
+      "pmd_func": "pmd_func_sat",
+      "drag_func": "drag_func_exp"
+  },
+  {
+      "sym_name": "N",
+      "Cd": 2.2,
+      "mass": [0.00141372, 0.5670],
+      "radius": [0.01, 0.1321],
+      "A": "Calculated based on radius",
+      "active": false,
+      "maneuverable": false,
+      "trackable": false,
+      "deltat": null,
+      "Pm": 0,
+      "alpha": 0,
+      "alpha_active": 0,
+      "RBflag": 0,
+      "slotting_effectiveness": 1,
+      "drag_effected": true,
+      "launch_func": "launch_func_null",
+      "pmd_func": "pmd_func_derelict",
+      "drag_func": "drag_func_exp"
+  },
+  {
+      "sym_name": "Sns",
+      "Cd": 2.2,
+      "mass": 6,
+      "radius": 0.105550206,
+      "A": 0.035,
+      "active": true,
+      "maneuverable": false,
+      "deltat": 3,
+      "Pm": 0,
+      "alpha": 0,
+      "alpha_active": 0,
+      "slotted" : false, 
+      "slotting_effectiveness": 0,
+      "drag_effected": true,
+      "launch_func": "launch_func_constant",
+      "pmd_func": "pmd_func_sat",
+      "drag_func": "drag_func_exp"
+  },
+  {
+      "sym_name": "B",
+      "RBflag" : 1,
+      "Cd": 2.2,
+      "mass": 1783.94,
+      "radius": 2.687936011,
+      "A": 22.6980069221863,
+      "active": false,
+      "slotted": false,
+      "slotting_effectiveness": 1,
+      "drag_effected": true,
+      "Pm": 0,
+      "alpha": 0,
+      "alpha_active": 0, 
+      "trackable": true,
+      "pmd_func": "pmd_func_none",
+      "drag_func": "drag_func_exp"
+  }]
   
   // Create a hook that hides certain fields based on the toggle
   const [isVisible, setVisibility] = useState(true);
@@ -152,6 +251,15 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
 
     createSimulation(sim);
   }
+
+  const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // const template = speciesTemplates.find(t => t.sym_name === e.target.value);
+    // if (template) {
+    //   setSpecies([...template, newSpecies]);
+    // }
+    // setSelectedTemplate(e.target.value);
+  };
+
 
   return (
   <div>
