@@ -17,7 +17,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { useState } from 'react';
 
-
 export function CreateSimulation() {
   return (
     <Link
@@ -93,10 +92,48 @@ export function ReviewSimulation({ id }: { id: string }) {
 //   );
 // }
 
+// export function RunSimulation({ id }: { id: string }) {
+//   const runModel = async () => {
+//     try {
+//       const response = await fetch('http://localhost:5000/api/orders', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({ id }),
+//       });
+
+//       if (response.ok) {
+//         alert('Model run successfully');
+//         // Handle successful response
+//       } else {
+//         alert('Failed to run model');
+//         // Handle error response
+//       }
+//     } catch (error: any) {
+//       alert(error.toString());
+//       // Handle network error
+//     }
+//   };
+
+//   return (
+//     <button
+//       onClick={runModel}
+//       className="rounded-md border p-2 hover:bg-gray-100"
+//     >
+//       <PlayIcon className="w-5" fill="lightgreen" color="lightgreen" />
+//     </button>
+//   );
+// }
+
 export function RunSimulation({ id }: { id: string }) {
+  const [progress, setProgress] = useState<number>(0);
+  const [status, setStatus] = useState<string>('Pending');
+  const [result, setResult] = useState<string>('');
+
   const runModel = async () => {
     try {
-      const response = await fetch('http://localhost:5000/runmodel', {
+      const response = await fetch('http://localhost:5000/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,28 +142,66 @@ export function RunSimulation({ id }: { id: string }) {
       });
 
       if (response.ok) {
-        alert('Model run successfully');
-        // Handle successful response
+        const data = await response.json();
+        const statusUrl = data.task_id;
+        console.log(statusUrl)
+
+        if (statusUrl) {
+          updateProgress(statusUrl);
+        } else {
+          alert('Failed to get status URL');
+        }
       } else {
         alert('Failed to run model');
-        // Handle error response
       }
-    } catch (error: Error) {
+    } catch (error: any) {
       alert(error.toString());
-      // Handle network error
+    }
+  };
+
+  const updateProgress = async (statusUrl: string) => {
+    try {
+      const response = await fetch(statusUrl);
+      if (response.ok) {
+        const data = await response.json();
+        const percent = (parseInt(data.current) * 100) / parseInt(data.total);
+        setProgress(percent);
+        setStatus(data.status);
+
+        if (data.state !== 'PENDING' && data.state !== 'PROGRESS') {
+          setResult(data.result || data.state);
+        } else {
+          setTimeout(() => updateProgress(statusUrl), 2000);
+          console.log('Progress:', percent, 'Status:', data.status, 'Result:', data.result || data.state)
+        }
+      } else {
+        alert('Failed to get progress');
+      }
+    } catch (error: any) {
+      alert(error.toString());
     }
   };
 
   return (
-    <button
-      onClick={runModel}
-      className="rounded-md border p-2 hover:bg-gray-100"
-    >
-      <PlayIcon className="w-5" fill="lightgreen" color="lightgreen" />
-    </button>
+    <div>
+      <button
+        onClick={runModel}
+        className="rounded-md border p-2 hover:bg-gray-100"
+      >
+        <PlayIcon className="w-5" fill="lightgreen" color="lightgreen" />
+      </button>
+      <div id="progress">
+        <div className="progress">
+          <div style={{ width: `${progress.toString()}%`, backgroundColor: '#44f' }}></div>
+          <div>{progress}%</div>
+          <div>{status}</div>
+          <div>&nbsp;{result && `Result: ${result}`}</div>
+        </div>
+        <hr />
+      </div>
+    </div>
   );
 }
-
 
 export function StopSimulation({ id }: { id: string }) {
   return (
