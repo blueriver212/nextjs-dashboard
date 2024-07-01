@@ -4,8 +4,6 @@ import { notFound } from 'next/navigation';
 import Form from '@/app/ui/simulations/create-form';
 import { fetchSimulationNames } from '@/app/lib/data';
 import EditSimulationForm from '@/app/ui/simulations/edit-form';
-
-// Here you can also import the templates if needed. 
  
 export default async function Page({ params }: { params: { id: string } }) {
     const id = params.id;

@@ -46,8 +46,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Slider } from "@/components/ui/slider"
-
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from '@/app/ui/button';
@@ -56,6 +54,7 @@ import { createSimulation, updateSimulation} from '@/app/lib/actions';
 import { Species } from '@/app/lib/definitions';
 const { v4: uuidv4 } = require('uuid');
 import { useEffect } from 'react';
+import { any } from 'zod';
 
 const speciesTemplates = [
   {
@@ -165,7 +164,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [species, setSpecies] = useState<Species[]>([]);
 
-  const handleTemplateChange = (e) => {
+  const handleTemplateChange = (e: React.MouseEvent) => {
     const template = speciesTemplates.find(template => template.sym_name === e.target.value);
     if (template) {
       setNewSpecies(template);
@@ -267,7 +266,8 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
         density_model: form.get('densityModel') as string,
         LC: parseFloat(form.get('launchCoefficient') as string),
         v_imp: parseFloat(form.get('impactVelocity') as string),
-        launch_function: form.get('launchFunction') as string
+        // launch_function: form.get('launchFunction') as string
+        launch_function: "Constant"
       },
       species: species,
       modified: new Date().toISOString(),
@@ -471,7 +471,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                           id="densityModel"
                           name="densityModel"
                           type="text"
-                          defaultValue="JB2008_dens_func"
+                          defaultValue="static_exp_dens_func"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
                       <CloudIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />

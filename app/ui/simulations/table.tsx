@@ -1,13 +1,10 @@
 import SimulationStatus from '@/app/ui/simulations/status';
 import { fetchFilteredSimulations } from '@/app/lib/data';
 import { DeleteSimulation, UpdateSimulation, ReviewSimulation, RunSimulation, StopSimulation } from './buttons';
-import Link from 'next/link';
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -20,6 +17,7 @@ export default async function SimulationTable({
   query: string;
   currentPage: number;
 }) {
+
   const simulations = await fetchFilteredSimulations(query, currentPage);
 
   return (

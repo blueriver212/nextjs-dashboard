@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useState } from 'react';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 export function CreateSimulation() {
   return (
@@ -80,52 +82,6 @@ export function ReviewSimulation({ id }: { id: string }) {
   ); 
 }
 
-
-// export function RunSimulation({ id }: { id: string }) {
-//   return (
-//     <Link
-//       href={`/dashboard/simulations/${id}/run`}
-//       className="rounded-md border p-2 hover:bg-gray-100"
-//     >
-//       <PlayIcon className="w-5" fill="lightgreen" color='lightgreen' />
-//     </Link>
-//   );
-// }
-
-// export function RunSimulation({ id }: { id: string }) {
-//   const runModel = async () => {
-//     try {
-//       const response = await fetch('http://localhost:5000/api/orders', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ id }),
-//       });
-
-//       if (response.ok) {
-//         alert('Model run successfully');
-//         // Handle successful response
-//       } else {
-//         alert('Failed to run model');
-//         // Handle error response
-//       }
-//     } catch (error: any) {
-//       alert(error.toString());
-//       // Handle network error
-//     }
-//   };
-
-//   return (
-//     <button
-//       onClick={runModel}
-//       className="rounded-md border p-2 hover:bg-gray-100"
-//     >
-//       <PlayIcon className="w-5" fill="lightgreen" color="lightgreen" />
-//     </button>
-//   );
-// }
-
 export function RunSimulation({ id }: { id: string }) {
   const [progress, setProgress] = useState<number>(0);
   const [status, setStatus] = useState<string>('Pending');
@@ -156,7 +112,7 @@ export function RunSimulation({ id }: { id: string }) {
       }
     } catch (error: any) {
       alert(error.toString());
-    }
+    } 
   };
 
   const updateProgress = async (statusUrl: string) => {
@@ -179,6 +135,10 @@ export function RunSimulation({ id }: { id: string }) {
       }
     } catch (error: any) {
       alert(error.toString());
+    } finally
+    {
+      revalidatePath('/dashboard/simulations');
+      redirect('/dashboard/simulations');
     }
   };
 

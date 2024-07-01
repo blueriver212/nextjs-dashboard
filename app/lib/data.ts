@@ -114,3 +114,13 @@ export async function fetchSimulationById(id: string) {
     throw new Error('Failed to fetch simulation.');
   }
 }
+
+export async function fetchResultsById(id: string) {
+  try {
+    const data = await sql`SELECT * FROM results WHERE id = ${id}`;
+    return data.rows[0];
+    } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch results.');
+  }
+}
