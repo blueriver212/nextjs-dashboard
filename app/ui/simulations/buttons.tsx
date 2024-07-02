@@ -126,6 +126,10 @@ export function RunSimulation({ id }: { id: string }) {
 
         if (data.state !== 'PENDING' && data.state !== 'PROGRESS') {
           setResult(data.result || data.state);
+          if (data.state === 'COMPLETE') {
+            revalidatePath('/dashboard/simulations');
+            redirect('/dashboard/simulations');
+          }
         } else {
           setTimeout(() => updateProgress(statusUrl), 2000);
           console.log('Progress:', percent, 'Status:', data.status, 'Result:', data.result || data.state)
@@ -135,10 +139,6 @@ export function RunSimulation({ id }: { id: string }) {
       }
     } catch (error: any) {
       alert(error.toString());
-    } finally
-    {
-      revalidatePath('/dashboard/simulations');
-      redirect('/dashboard/simulations');
     }
   };
 

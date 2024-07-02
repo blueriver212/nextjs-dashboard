@@ -4,14 +4,17 @@ import SummaryGraph from '@/app/ui/pyssem/plot';
 import { fetchResultsById } from '@/app/lib/data';
 import { fetchSimulationById } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
+import { PlotData } from 'plotly.js';
 
 export default async function Results({ params }: { params: { id: string } }) {
 
     const id = params.id;
 
-    const [simulation] = await Promise.all([
-        fetchResultsById(id)
-      ]);
+    const [results] = await Promise.all([
+        fetchResultsById(id),
+    ]);
+
+    const simulation = await fetchSimulationById(id);
 
     if (!simulation) {
         notFound();
@@ -36,8 +39,8 @@ export default async function Results({ params }: { params: { id: string } }) {
                         </Button>
                     </Link>                
                 </div> */}
-                <SummaryGraph simulation={simulation} />
-                {/* <PlotlyHeatmap /> */}
+                <SummaryGraph results={results}/>
+                <PlotlyHeatmap results={results} simulation={simulation} />
             </main>
         </div>
     );

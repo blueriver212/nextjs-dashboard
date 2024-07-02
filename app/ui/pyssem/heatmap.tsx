@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import dynamic from 'next/dynamic';
 import {
   Accordion,
@@ -8,143 +8,72 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { SimulationForm, PlotData } from '@/app/lib/definitions';
 
 // Dynamically import Plotly to ensure it only runs on the client side
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
-interface Shell {
-    shell_index: number;
-    values: number[];
-}
+const PlotlyHeatmap: React.FC<{ results: PlotData, simulation: SimulationForm }> = ({ results, simulation }) => {
+    const { population_data, times, species } = results;
+    const speciesInfo = simulation.species;
 
-interface Species {
-    name: string;
-    shells: Shell[];
-}
-
-interface PlotData {
-    species: Species[];
-    time_points: number[];
-}
-
-interface Simulation {
-    simulation_name: string;
-    id: string;
-    owner: string;
-    description: string;
-    created: string;
-    modified: string;
-    scenario_properties: {
-        start_date: string;
-        simulation_duration: number;
-        steps: number;
-        min_altitude: number;
-        max_altitude: number;
-        n_shells: number;
-        launch_function: string;
-        integrator: string;
-        density_model: string;
-        LC: number;
-        v_imp: number;
-    };
-    species: {
-        [key: string]: {
-            sym_name: string;
-            Cd: number;
-            mass: number[];
-            A: number[] | string;
-            radius: number[];
-            active: boolean;
-            maneuverable: boolean;
-            trackable: boolean;
-            deltat: number[] | null;
-            Pm: number;
-            alpha: number;
-            alpha_active: number;
-            RBflag: number;
-            slotting_effectiveness: number;
-            drag_effected: boolean;
-            launch_func: string;
-            pmd_func: string;
-            drag_func: string;
-        };
-    };
-}
-
-const PlotlyHeatmap: React.FC = () => {
-    const [plotData, setPlotData] = useState<PlotData | null>(null);
-    const [simulationData, setSimulationData] = useState<Simulation | null>(null);
-
-    useEffect(() => {
-        fetch('/plotly_data.json')
-            .then(response => response.json())
-            .then(data => setPlotData(data));
-
-        fetch('/simulation.json')
-            .then(response => response.json())
-            .then(data => setSimulationData(data));
-    }, []);
-
-    if (!plotData || !simulationData) {
-        return <div>Loading...</div>;
-    }
-
-    const { time_points, species } = plotData;
-    const speciesInfo = simulationData.species;
-
-    const numSpecies = species.length;
-    const numShells = species[0].shells.length;
+    const numShells = simulation.scenario_properties.n_shells;
 
     return (
         <Accordion type="single" collapsible className="w-full">
-            {species.map((species, speciesIndex) => {
-                const speciesName = species.name;
-                const speciesPrefix = speciesName.split('_')[0];
-                const speciesData = speciesInfo[speciesPrefix];
+            {species.map((speciesName, speciesIndex) => {
+                const speciesData = simulation.species.find(species => species.sym_name === speciesName);
+                const speciesPopulationData = population_data.filter(data => data.spcies === speciesName);
 
-                const dataPerSpecies = species.shells.map(shell => shell.values);
+                const dataPerShell = Array(numShells).fill(null).map(() => Array(times.length).fill(0));
+
+                speciesPopulationData.forEach(data => {
+                    data.populations.forEach((population, idx) => {
+                        dataPerShell[data.shell - 1][idx] = population;
+                    });
+                });
 
                 const heatmapTrace: Partial<Plotly.PlotData> = {
-                    z: dataPerSpecies,
-                    x: time_points,
-                    y: Array.from({ length: numShells }, (_, i) => i),
+                    z: dataPerShell,
+                    x: times,
+                    y: Array.from({ length: numShells }, (_, i) => i + 1),
                     type: 'heatmap',
                     colorscale: 'Viridis'
                 };
 
-                const lineGraphTraces = species.shells.map(shell => ({
-                    x: time_points,
-                    y: shell.values,
+                const lineGraphTraces = dataPerShell.map((shellData, idx) => ({
+                    x: times,
+                    y: shellData,
                     mode: 'lines',
-                    name: `Shell ${shell.shell_index}`
+                    name: `Shell ${idx + 1}`
                 }));
 
                 const heatmapLayout: Partial<Plotly.Layout> = {
-                    title: `${species.name} - Heatmap`,
+                    title: `${speciesName} - Heatmap`,
                     xaxis: { title: 'Time' },
-                    yaxis: { title: 'Orbital Shell', tickvals: Array.from({ length: numShells }, (_, i) => i) },
+                    yaxis: { title: 'Orbital Shell', tickvals: Array.from({ length: numShells }, (_, i) => i + 1) },
                 };
 
                 const lineGraphLayout: Partial<Plotly.Layout> = {
-                    title: `${species.name} - Line Graph`,
+                    title: `${speciesName} - Line Graph`,
                     xaxis: { title: 'Time' },
                     yaxis: { title: 'Number of Objects' }
                 };
 
                 return (
                     <AccordionItem key={speciesIndex} value={`item-${speciesIndex}`}>
-                        <AccordionTrigger>{species.name}</AccordionTrigger>
+                        <AccordionTrigger>{speciesName}</AccordionTrigger>
                         <AccordionContent>
                             {speciesData && (
                                 <div style={{ marginBottom: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
                                     <div><strong>Symbol Name:</strong> {speciesData.sym_name}</div>
                                     <div><strong>Cd:</strong> {speciesData.Cd}</div>
-                                    <div><strong>Mass:</strong> {speciesData.mass.join(', ')}</div>
-                                    <div><strong>Radius:</strong> {speciesData.radius.join(', ')}</div>
+                                    <div><strong>Mass:</strong> {Array.isArray(speciesData.mass) ? speciesData.mass.join(', ') : speciesData.mass}</div>
+                                    <div><strong>Radius:</strong> {Array.isArray(speciesData.radius) ? speciesData.radius.join(', ') : speciesData.radius}</div>
                                     <div><strong>Active:</strong> {speciesData.active ? 'Yes' : 'No'}</div>
                                     <div><strong>Maneuverable:</strong> {speciesData.maneuverable ? 'Yes' : 'No'}</div>
                                     <div><strong>Trackable:</strong> {speciesData.trackable ? 'Yes' : 'No'}</div>
-                                    <div><strong>Delta t:</strong> {speciesData.deltat ? speciesData.deltat.join(', ') : 'N/A'}</div>
+                                    <div><strong>Delta t:</strong> {speciesData.deltat ? (Array.isArray(speciesData.deltat) ? speciesData.deltat.join(', ') : speciesData.deltat) : 'N/A'}</div>
                                     <div><strong>Pm:</strong> {speciesData.Pm}</div>
                                     <div><strong>Alpha:</strong> {speciesData.alpha}</div>
                                     <div><strong>Alpha Active:</strong> {speciesData.alpha_active}</div>

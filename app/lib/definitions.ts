@@ -81,3 +81,23 @@ export type Species = {
   drag_func?: string;
   trackable_radius_threshold?: number;
 };
+
+// PLOTTING
+interface PopulationData {
+  shell: number;
+  spcies: string;  // Notice the typo here to match your data structure
+  populations: number[];
+}
+
+export interface PlotData {
+  population_data: PopulationData[];
+  times: number[];
+  max_altitude: number;
+  min_altitude: number;
+  hmid: number[];
+  species: string[];
+}
+
+export interface SummaryGraphProps {
+  results: PlotData;
+}

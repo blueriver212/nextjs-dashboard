@@ -1,6 +1,7 @@
 import { sql } from '@vercel/postgres';
 import {
   SimulationForm,
+  PlotData
 } from './definitions';
 
 // export async function fetchCardData() {
@@ -116,8 +117,9 @@ export async function fetchSimulationById(id: string) {
 }
 
 export async function fetchResultsById(id: string) {
+  console.log('fetchResultsById', id)
   try {
-    const data = await sql`SELECT * FROM results WHERE id = ${id}`;
+    const data = await sql<PlotData>`SELECT * FROM results WHERE id = ${id}`;
     return data.rows[0];
     } catch (error) {
     console.error('Database Error:', error);
