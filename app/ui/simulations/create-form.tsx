@@ -1,7 +1,7 @@
 'use client';
-import { FormEvent, useState } from 'react'
-import { SimulationForm, SimulationNames } from '@/app/lib/definitions';
-import { Switch } from "@/components/ui/switch"
+import { FormEvent, useState, useEffect } from 'react';
+import { SimulationForm, SimulationNames, Species } from '@/app/lib/definitions';
+import { Switch } from "@/components/ui/switch";
 import Link from 'next/link';
 import {
   CalendarIcon,
@@ -28,15 +28,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/table";
 import {
   Sheet,
   SheetContent,
@@ -44,119 +36,237 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from '@/app/ui/button';
 import { Button as ShadButton } from '@/components/ui/button';
-import { createSimulation, updateSimulation} from '@/app/lib/actions';
-import { Species } from '@/app/lib/definitions';
-const { v4: uuidv4 } = require('uuid');
-import { useEffect } from 'react';
-import { any } from 'zod';
+import { createSimulation, updateSimulation } from '@/app/lib/actions';
 
-const speciesTemplates = [
+const { v4: uuidv4 } = require('uuid');
+
+const speciesTemplates: Species[] = [
   {
-    "sym_name": "S",
-    "Cd": 2.2,
-    // "mass": [1250, 750, 148],
-    // "radius": [4, 2, 0.5],
+    sym_name: "S",
+    Cd: 2.2,
     mass: 1250,
     radius: 4,
-    "A": "Calculated based on radius",
-    "active": true,
-    "maneuverable": true,
-    "trackable": true,
-    "deltat": 8,
-    "Pm": 0.90,
-    "alpha": 1e-5,
-    "alpha_active": 1e-5,
-    "slotted": true, 
-    "slotting_effectiveness": 1.0,
-    "drag_effected": false,
-    "launch_func": "launch_func_constant",
-    "pmd_func": "pmd_func_sat",
-    "drag_func": "drag_func_exp"
-},
-{
-    "sym_name": "Su",
-    "Cd": 2.2,
-    "mass": 260,
-    "A": 1.6652,
-    "radius": 0.728045069,
-    "active": true,
-    "maneuverable": true,
-    "trackable": true,
-    "deltat": 8,
-    "Pm": 0.65,
-    "alpha": 1e-5,
-    "alpha_active": 1e-5,
-    "RBflag": 0,
-    "slotting_effectiveness": 1.0,
-    "drag_effected": false,
-    "launch_func": "launch_func_constant",
-    "pmd_func": "pmd_func_sat",
-    "drag_func": "drag_func_exp"
-},
-{
-    "sym_name": "N",
-    "Cd": 2.2,
-    "mass": 0.00141372,
-    "radius": 0.01,
-    "A": "Calculated based on radius",
-    "active": false,
-    "maneuverable": false,
-    "trackable": false,
-    "deltat": null,
-    "Pm": 0,
-    "alpha": 0,
-    "alpha_active": 0,
-    "RBflag": 0,
-    "slotting_effectiveness": 1,
-    "drag_effected": true,
-    "launch_func": "launch_func_null",
-    "pmd_func": "pmd_func_derelict",
-    "drag_func": "drag_func_exp"
-},
-{
-    "sym_name": "Sns",
-    "Cd": 2.2,
-    "mass": 6,
-    "radius": 0.105550206,
-    "A": 0.035,
-    "active": true,
-    "maneuverable": false,
-    "deltat": 3,
-    "Pm": 0,
-    "alpha": 0,
-    "alpha_active": 0,
-    "slotted" : false, 
-    "slotting_effectiveness": 0,
-    "drag_effected": true,
-    "launch_func": "launch_func_constant",
-    "pmd_func": "pmd_func_sat",
-    "drag_func": "drag_func_exp"
-},
-{
-    "sym_name": "B",
-    "RBflag" : 1,
-    "Cd": 2.2,
-    "mass": 1783.94,
-    "radius": 2.687936011,
-    "A": 22.6980069221863,
-    "active": false,
-    "slotted": false,
-    "slotting_effectiveness": 1,
-    "drag_effected": true,
-    "Pm": 0,
-    "alpha": 0,
-    "alpha_active": 0, 
-    "trackable": true,
-    "pmd_func": "pmd_func_none",
-    "drag_func": "drag_func_exp"
-}]
+    A: "Calculated based on radius",
+    active: true,
+    maneuverable: true,
+    trackable: true,
+    deltat: 8,
+    Pm: 0.90,
+    alpha: 1e-5,
+    alpha_active: 1e-5,
+    slotted: true,
+    slotting_effectiveness: 1.0,
+    drag_effected: false,
+    launch_func: "launch_func_constant",
+    pmd_func: "pmd_func_sat",
+    drag_func: "drag_func_exp"
+  },
+  {
+    sym_name: "Su",
+    Cd: 2.2,
+    mass: 260,
+    A: 1.6652,
+    radius: 0.728045069,
+    active: true,
+    maneuverable: true,
+    trackable: true,
+    deltat: 8,
+    Pm: 0.65,
+    alpha: 1e-5,
+    alpha_active: 1e-5,
+    RBflag: 0,
+    slotting_effectiveness: 1.0,
+    drag_effected: false,
+    launch_func: "launch_func_constant",
+    pmd_func: "pmd_func_sat",
+    drag_func: "drag_func_exp"
+  },
+  {
+    sym_name: "N",
+    Cd: 2.2,
+    mass: 0.00141372,
+    radius: 0.01,
+    A: "Calculated based on radius",
+    active: false,
+    maneuverable: false,
+    trackable: false,
+    deltat: null,
+    Pm: 0,
+    alpha: 0,
+    alpha_active: 0,
+    RBflag: 0,
+    slotting_effectiveness: 1,
+    drag_effected: true,
+    launch_func: "launch_func_null",
+    pmd_func: "pmd_func_derelict",
+    drag_func: "drag_func_exp"
+  },
+  {
+    sym_name: "Sns",
+    Cd: 2.2,
+    mass: 6,
+    radius: 0.105550206,
+    A: 0.035,
+    active: true,
+    maneuverable: false,
+    deltat: 3,
+    Pm: 0,
+    alpha: 0,
+    alpha_active: 0,
+    slotted: false,
+    slotting_effectiveness: 0,
+    drag_effected: true,
+    launch_func: "launch_func_constant",
+    pmd_func: "pmd_func_sat",
+    drag_func: "drag_func_exp"
+  },
+  {
+    sym_name: "B",
+    RBflag: 1,
+    Cd: 2.2,
+    mass: 1783.94,
+    radius: 2.687936011,
+    A: 22.6980069221863,
+    active: false,
+    slotted: false,
+    slotting_effectiveness: 1,
+    drag_effected: true,
+    Pm: 0,
+    alpha: 0,
+    alpha_active: 0,
+    trackable: true,
+    pmd_func: "pmd_func_none",
+    drag_func: "drag_func_exp",
+    launch_func: null
+  }
+];
 
+// export default function Form({
+//   sim_names,
+//   simulation,
+//   edit
+// }: {
+//   sim_names: SimulationNames[];
+//   simulation: SimulationForm | null;
+//   edit: boolean;
+// }) {
+
+//   // Creating one form that handles both edit and new based on whether the edit flag is set to true
+//   const [newSpecies, setNewSpecies] = useState<Species | null>(null);
+//   const [selectedTemplate, setSelectedTemplate] = useState('');
+//   const [species, setSpecies] = useState<Species[]>([]);
+
+//   const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+//     const template = speciesTemplates.find((species) => species.sym_name === e.target.value);
+//     if (template) {
+//       setNewSpecies({ ...template }); 
+//     }
+//     setSelectedTemplate(e.target.value);
+//   };
+
+//   // Create a hook that hides certain fields based on the toggle
+//   const [isVisible, setVisibility] = useState(true);
+
+//   const toggleVisibility = () => {
+//     setVisibility(!isVisible);
+//   };
+
+//   // This will handle when new species are added to the simulation
+//   useEffect(() => {
+//     if (edit && simulation) {
+//       setSpecies(simulation.species);
+//     }
+//   }, [edit, simulation]);
+
+//   const [isEditing, setIsEditing] = useState(false);
+//   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+//   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+//   const handleEditSpecies = (e: React.FormEvent, species: Species, index: number) => {
+//     e.preventDefault();
+//     setIsEditing(true);
+//     setNewSpecies({ ...species });
+//     setEditingIndex(index);
+//     setIsDialogOpen(true);
+//   };
+
+//   const handleAddSpecies = (e: React.FormEvent) => {
+//     e.preventDefault();
+//     e.stopPropagation();
+//     if (isEditing) {
+//         if (editingIndex !== null && newSpecies !== null) {
+//             const newSpeciesList = [...species];
+//             newSpeciesList[editingIndex] = newSpecies;
+//             setSpecies(newSpeciesList);
+//             setEditingIndex(null);
+//         }
+//     } else {
+//         if (newSpecies !== null) {
+//             console.log(newSpecies)
+//             setSpecies([...species, newSpecies]);
+//         }
+//     }
+//     setNewSpecies(null);
+//     setIsEditing(false);
+// };
+
+//   const closeDialog = () => {
+//     setIsDialogOpen(false);
+//   };
+
+//   const handleDeleteSpecies = (e: React.MouseEvent, index: number) => {
+//     e.preventDefault();
+//     const newSpeciesList = [...species];
+//     newSpeciesList.splice(index, 1);
+//     setSpecies(newSpeciesList);
+//   };
+
+//   const handleSim = async (event: React.FormEvent<HTMLFormElement>) => {
+//     event.preventDefault();
+//     const form = new FormData(event.currentTarget);
+
+//     // Handle the non-required fields
+//     if (!form.get('description')) {
+//       form.set('description', '');
+//     }
+
+//     // This function will take the current simulation data and format it correctly.
+//     const sim: SimulationForm = {
+//       id: uuidv4(),
+//       simulation_name: form.get('simulationName') as string,
+//       owner: form.get('owner') as string,
+//       description: form.get('description') as string,
+//       created: new Date().toISOString(),
+//       status: "not started",
+//       scenario_properties: {
+//         start_date: form.get('startDate') as string,
+//         simulation_duration: parseInt(form.get('simulationDuration') as string),
+//         steps: parseInt(form.get('steps') as string),
+//         max_altitude: parseInt(form.get('maxAltitude') as string),
+//         min_altitude: parseInt(form.get('minAltitude') as string),
+//         n_shells: parseInt(form.get('nShells') as string),
+//         integrator: form.get('integrator') as string,
+//         density_model: form.get('densityModel') as string,
+//         LC: parseFloat(form.get('launchCoefficient') as string),
+//         v_imp: parseFloat(form.get('impactVelocity') as string),
+//         launch_function: "Constant"
+//       },
+//       species: species,
+//       modified: new Date().toISOString(),
+//     };
+
+//     if (edit) {
+//       await updateSimulation(sim);
+//     } else {
+//       await createSimulation(sim);
+//     }
+//   };
 
 export default function Form({ sim_names, simulation, edit }: { sim_names: SimulationNames[], simulation: SimulationForm | null, edit: boolean}) {
   // Creating one form that handle both edit and new based on whether the edit flag is set to true
@@ -164,10 +274,10 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [species, setSpecies] = useState<Species[]>([]);
 
-  const handleTemplateChange = (e: React.MouseEvent) => {
-    const template = speciesTemplates.find(template => template.sym_name === e.target.value);
+  const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const template = speciesTemplates.find((species) => species.sym_name === e.target.value);
     if (template) {
-      setNewSpecies(template);
+      setNewSpecies({ ...template }); 
     }
     setSelectedTemplate(e.target.value);
   };
@@ -179,8 +289,6 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
   const toggleVisibility = () => {
     setVisibility(!isVisible);
   }
-
-  // This will handle when new species are added to the simulation
 
 
   useEffect(() => {
@@ -515,15 +623,6 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
 
         <Table>
         <TableCaption>
-          {/* <Dialog open={isDialogOpen} onOpenChange={closeDialog}>
-          <DialogTrigger>{isEditing ? 'Edit Species' : '+ Add New Species +'}</DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{isEditing ? 'Edit Species' : 'New Species'}</DialogTitle>
-              <DialogDescription>
-                {isEditing ? 'Edit an existing species in your simulation' : 'Add a new species to your simulation'}
-              </DialogDescription>
-            </DialogHeader> */}
             <Sheet open={isDialogOpen} onOpenChange={closeDialog}>
               <SheetTrigger>{isEditing ? 'Edit Species' : '+ Add New Species +'}</SheetTrigger>
               <SheetContent>
@@ -626,7 +725,8 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                     <Switch
                       id="active"
                       checked={newSpecies?.active ?? false}
-                      onCheckedChange={() => setNewSpecies({ ...newSpecies, active: !newSpecies.active })}
+                      defaultChecked={true}
+                      onCheckedChange={() => setNewSpecies(prev => ({ ...prev, active: !prev?.active }))}
                     />
                   </div>
                 </div>
@@ -640,7 +740,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                     id="maneuverable"
                     className="col-span-2"
                     checked={newSpecies?.maneuverable ?? false}
-                    onCheckedChange={() => setNewSpecies({ ...newSpecies, maneuverable: !newSpecies.maneuverable })}
+                    onCheckedChange={() => setNewSpecies({ ...newSpecies, maneuverable: !newSpecies?.maneuverable })}
                   />
                   </div>
                 </div>
@@ -709,7 +809,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                       id="slotted"
                       className="col-span-2"
                       checked={newSpecies?.slotted ?? false}
-                      onCheckedChange={() => setNewSpecies({ ...newSpecies, slotted: !newSpecies.slotted })}
+                      onCheckedChange={() => setNewSpecies({ ...newSpecies, slotted: !newSpecies?.slotted })}
                     />
                   </div>
                 </div>
@@ -734,7 +834,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                       id="drag"
                       className="col-span-2"
                       checked={newSpecies?.drag_effected ?? false}
-                      onCheckedChange={() => setNewSpecies({ ...newSpecies, drag_effected: !newSpecies.drag_effected })}
+                      onCheckedChange={() => setNewSpecies({ ...newSpecies, drag_effected: !newSpecies?.drag_effected })}
                     />
                   </div>
                 </div>

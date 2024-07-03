@@ -41,7 +41,7 @@ export type Species = {
   mass_lb?: number;
   mass_ub?: number;
   radius?: number | number[];
-  A?: number | number[];
+  A?: any;
   amr?: number;
   beta?: number;
   B?: number;
@@ -52,7 +52,7 @@ export type Species = {
   active?: boolean;
   maneuverable?: boolean;
   trackable?: boolean;
-  deltat?: number | number[];
+  deltat?: any;
   Pm?: number;
   alpha?: number;
   alpha_active?: number;
@@ -76,7 +76,7 @@ export type Species = {
   t_plan_max?: number;
   t_plan_period?: number;
   prev_prop_results?: any;
-  launch_func?: string;
+  launch_func?: any;
   pmd_func?: string;
   drag_func?: string;
   trackable_radius_threshold?: number;
