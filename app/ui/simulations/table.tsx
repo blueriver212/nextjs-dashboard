@@ -1,5 +1,5 @@
 import SimulationStatus from '@/app/ui/simulations/status';
-import { fetchFilteredSimulations } from '@/app/lib/data';
+import { fetchFilteredSimulations, fetchExampleSimulations } from '@/app/lib/data';
 import { DeleteSimulation, UpdateSimulation, ReviewSimulation, RunSimulation, StopSimulation } from './buttons';
 import {
   Table,
@@ -13,17 +13,24 @@ import {
 export default async function SimulationTable({
   query,
   currentPage,
+  examplePage
 }: {
   query: string;
   currentPage: number;
+  examplePage?: boolean;
 }) {
 
-  const simulations = await fetchFilteredSimulations(query, currentPage);
+  let simulations;
+  if (examplePage) {
+    simulations = await fetchExampleSimulations(query);
+  } else {
+    simulations = await fetchFilteredSimulations(query, currentPage);
+  }
 
   return (
-    <div className="mt-6 flow-root">
-      <div className="inline-block min-w-full align-middle">
-        <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
+    <div className="mt-6 flow-root w-full">
+      <div className="inline-block w-full align-middle">
+        <div className="overflow-hidden rounded-lg bg-gray-50 p-2 md:pt-0">
           <div className="md:hidden">
             {simulations?.map((simulation) => (
               <div
@@ -45,65 +52,66 @@ export default async function SimulationTable({
                     {simulation.status === 'not started' && <RunSimulation id={simulation.id} />}
                     {simulation.status === 'failed' && <RunSimulation id={simulation.id} />}
                     {simulation.status === 'in progress' && <StopSimulation id={simulation.id} />}
-                    <UpdateSimulation id={simulation.id} />
-                    <DeleteSimulation id={simulation.id} />
+                    {!examplePage && <UpdateSimulation id={simulation.id} />}
+                    {!examplePage && <DeleteSimulation id={simulation.id} />}
                   </div>
                 </div>
               </div>
             ))}
           </div>
-          <Table className="hidden min-w-full text-gray-900 md:table">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="px-4 py-5 font-medium sm:pl-6">Simulation Name</TableHead>
-                <TableHead className="px-3 py-5 font-medium">Owner</TableHead>
-                <TableHead className="px-3 py-5 font-medium">Description</TableHead>
-                <TableHead className="px-3 py-5 font-medium">Date Created</TableHead>
-                <TableHead className="px-3 py-5 font-medium">Status</TableHead>
-                <TableHead className="relative py-3 pl-6 pr-3">Actions
-                  {/* <span className="sr-only">Edit</span> */}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="bg-white">
-              {simulations?.map((simulation) => (
-                <TableRow
-                  key={simulation.id}
-                  className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
-                >
-                  <TableCell className="whitespace-nowrap py-3 pl-6 pr-3">
-                    <div className="flex items-center gap-3">
-                      <p>{simulation.simulation_name}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap px-3 py-3">
-                    {simulation.owner}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap px-3 py-3">
-                    {simulation.description}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap px-3 py-3">
-                    {simulation.created.toString() }
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap px-3 py-3">
-                    <SimulationStatus status={simulation.status} />
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap py-3 pl-6 pr-3">
-                  <div className="flex justify-end gap-3">
-                    {simulation.status === 'completed' && <ReviewSimulation id={simulation.id} />}
-                    {simulation.status === 'not started' && <RunSimulation id={simulation.id} />}
-                    {simulation.status === 'failed' && <RunSimulation id={simulation.id} />}
-                    {simulation.status === 'in progress' && <StopSimulation id={simulation.id} />}
-                    <UpdateSimulation id={simulation.id} />
-                    <DeleteSimulation id={simulation.id} />
-                  </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table className="w-full min-w-full text-gray-900 md:table">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="px-4 py-5 font-medium sm:pl-6">Simulation Name</TableHead>
+                  <TableHead className="px-3 py-5 font-medium">Owner</TableHead>
+                  <TableHead className="px-3 py-5 font-medium truncate">Description</TableHead>
+                  <TableHead className="px-3 py-5 font-medium">Date Created</TableHead>
+                  <TableHead className="px-3 py-5 font-medium">Status</TableHead>
+                  <TableHead className="relative py-3 pl-6 pr-3">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody className="bg-white">
+                {simulations?.map((simulation) => (
+                  <TableRow
+                    key={simulation.id}
+                    className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
+                  >
+                    <TableCell className="whitespace-nowrap py-3 pl-6 pr-3">
+                      <div className="flex items-center gap-3">
+                        <p>{simulation.simulation_name}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap px-3 py-3">
+                      {simulation.owner}
+                    </TableCell>
+                    <TableCell className="whitespace-normal px-3 py-3 break-words">
+                      {simulation.description}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap px-3 py-3">
+                      {simulation.created.toString()}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap px-3 py-3">
+                      <SimulationStatus status={simulation.status} />
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap py-3 pl-6 pr-3">
+                      <div className="flex justify-end gap-3">
+                        {simulation.status === 'completed' && <ReviewSimulation id={simulation.id} />}
+                        {simulation.status === 'not started' && <RunSimulation id={simulation.id} />}
+                        {simulation.status === 'failed' && <RunSimulation id={simulation.id} />}
+                        {simulation.status === 'in progress' && <StopSimulation id={simulation.id} />}
+                        {!examplePage && <UpdateSimulation id={simulation.id} />}
+                        {!examplePage && <DeleteSimulation id={simulation.id} />}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
     </div>
   );
+   
 }

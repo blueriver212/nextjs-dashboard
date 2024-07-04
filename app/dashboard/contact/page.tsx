@@ -19,7 +19,6 @@ export default function Page() {
     const handleSubmit = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         e.preventDefault();
         // Handle form submission (e.g., send data to an API endpoint)
-        console.log(formData);
         alert('Message sent! Thank you for contacting us.');
         // Reset form data
         setFormData({

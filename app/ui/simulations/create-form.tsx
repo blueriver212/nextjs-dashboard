@@ -324,7 +324,6 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
           }
       } else {
           if (newSpecies !== null) {
-              console.log(newSpecies)
               setSpecies([...species, newSpecies]);
           }
       }
@@ -348,7 +347,6 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
   const handleSim = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    console.log(form)
 
     // Handle the none required fields
     if (form.get('description') === null) {
@@ -554,7 +552,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                   </div>
               </div>
 
-              <div className="relative mt-2 rounded-md" hidden={isVisible}>
+              <div className="relative mt-2 rounded-md" hidden={true}>
                   <label htmlFor="integrator" className="mb-2 block text-sm font-medium">
                       Integrator Type
                   </label>
@@ -845,6 +843,8 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                   <Input
                     id="launch_func"
                     type="text"
+                    hidden={true}
+                    readOnly
                     className="col-span-2"
                     value={newSpecies?.launch_func ?? ''}
                     onChange={(e) => setNewSpecies({ ...newSpecies, launch_func: e.target.value })}
@@ -857,6 +857,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                   <Input
                     id="pmd_func"
                     type="text"
+                    readOnly
                     className="col-span-2"
                     value={newSpecies?.pmd_func ?? ''}
                     onChange={(e) => setNewSpecies({ ...newSpecies, pmd_func: e.target.value })}
@@ -870,6 +871,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
                     id="drag_func"
                     type="text"
                     className="col-span-2"
+                    readOnly
                     value={newSpecies?.drag_func ?? ''}
                     onChange={(e) => setNewSpecies({ ...newSpecies, drag_func: e.target.value })}
                   />

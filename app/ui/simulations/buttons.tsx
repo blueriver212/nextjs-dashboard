@@ -72,6 +72,7 @@ export function DeleteSimulation({ id }: { id: string }) {
 }
 
 export function ReviewSimulation({ id }: { id: string }) {
+  console.log('Review Simulation', id)
   return (
     <Link
       href={`/dashboard/pyssem/${id}/results`}

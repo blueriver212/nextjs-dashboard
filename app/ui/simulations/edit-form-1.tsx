@@ -94,7 +94,6 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
           }
       } else {
           if (newSpecies !== null) {
-              console.log(newSpecies)
               setSpecies([...species, newSpecies]);
           }
       }

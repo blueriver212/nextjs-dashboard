@@ -23,7 +23,7 @@ const PlotlyHeatmap: React.FC<{ results: PlotData, simulation: SimulationForm }>
         <Accordion type="single" collapsible className="w-full">
             {species.map((speciesName, speciesIndex) => {
                 const speciesData = simulation.species.find(species => species.sym_name === speciesName);
-                const speciesPopulationData = population_data.filter(data => data.spcies === speciesName);
+                const speciesPopulationData = population_data.filter(data => data.species === speciesName);
 
                 const dataPerShell = Array(numShells).fill(null).map(() => Array(times.length).fill(0));
 

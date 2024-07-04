@@ -85,17 +85,24 @@ export type Species = {
 // PLOTTING
 interface PopulationData {
   shell: number;
-  spcies: string;  // Notice the typo here to match your data structure
+  species: string;
   populations: number[];
 }
 
+export interface LaunchGraphProps {
+  species: string;
+  counts: number[];
+}
+
 export interface PlotData {
-  population_data: PopulationData[];
   times: number[];
   max_altitude: number;
   min_altitude: number;
-  hmid: number[];
+  Hmid: number[];
   species: string[];
+  population_data: PopulationData[];
+  launch: LaunchGraphProps[] | null;
+  simulation_id: string;
 }
 
 export interface SummaryGraphProps {

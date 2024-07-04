@@ -4,7 +4,8 @@ import {
   UserGroupIcon,
   HomeIcon,
   DocumentDuplicateIcon,
-  GlobeEuropeAfricaIcon
+  GlobeEuropeAfricaIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { Code2Icon } from 'lucide-react';
 
@@ -16,7 +17,8 @@ import clsx from 'clsx';
 // Depending on the size of the application, this would be stored in a database.
 const links = [
   { name: 'Home', href: '/dashboard', icon: HomeIcon },
-  { name: 'Simulations', href: '/dashboard/simulations', icon: GlobeEuropeAfricaIcon},
+  { name: 'Example Simulations', href: '/dashboard/examples', icon: MagnifyingGlassIcon},
+  { name: 'Community Simulations', href: '/dashboard/simulations', icon: GlobeEuropeAfricaIcon},
   { name: 'Pyssem', href: '/dashboard/pyssem', icon:  Code2Icon},
   { name: 'Documentation', href: '/dashboard/documentation', icon: DocumentDuplicateIcon },
   { name: 'Contact Us', href: '/dashboard/contact', icon: UserGroupIcon },

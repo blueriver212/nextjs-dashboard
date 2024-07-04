@@ -4,37 +4,6 @@ import {
   PlotData
 } from './definitions';
 
-// export async function fetchCardData() {
-//   try {
-//     // You can probably combine these into a single SQL query
-//     // However, we are intentionally splitting them to demonstrate
-//     // how to initialize multiple queries in parallel with JS.
-//     const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-//     const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
-//     const invoiceStatusPromise = sql`SELECT
-//          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-//          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-//          FROM invoices`;
-
-//     const data = await Promise.all([
-//       invoiceCountPromise,
-//       customerCountPromise,
-//       invoiceStatusPromise,
-//     ]);
-
-//     const numberOfInvoices = Number(data[0].rows[0].count ?? '0');
-//     const numberOfCustomers = Number(data[1].rows[0].count ?? '0');
-
-//     return {
-//       numberOfCustomers,
-//       numberOfInvoices
-//     };
-//   } catch (error) {
-//     console.error('Database Error:', error);
-//     throw new Error('Failed to fetch card data.');
-//   }
-// }
-
 export async function fetchSimulations() {
   try {
     const data = await sql`SELECT * FROM simulations`;
@@ -44,7 +13,6 @@ export async function fetchSimulations() {
     throw new Error('Failed to fetch simulations.');
   }
 }
-
 
 const ITEMS_PER_PAGE = 8;
 
@@ -61,14 +29,41 @@ export async function fetchFilteredSimulations(query: string, currentPage: numbe
         created,
         status
       FROM simulations
-      WHERE
+      WHERE (
         simulation_name ILIKE ${`%${query}%`} OR
         owner ILIKE ${`%${query}%`} OR
         description ILIKE ${`%${query}%`} OR
-        created::text ILIKE ${`%${query}%`}
+        created::text ILIKE ${`%${query}%`} )
+      AND simulation_name NOT IN (
+        'Baseline',
+        'FCC and ITU Scenario'
+      )
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
 
+    return simulations.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch simulations.');
+  }
+}
+
+export async function fetchExampleSimulations(query: string): Promise<SimulationForm[]> {
+  try {
+    const simulations = await sql<SimulationForm>`
+      SELECT
+        id,
+        simulation_name,
+        owner,
+        description,
+        created,
+        status
+      FROM simulations
+      WHERE simulation_name IN (
+        'Baseline',
+        'FCC and ITU Scenario'
+      )
+    `;
     return simulations.rows;
   } catch (error) {
     console.error('Database Error:', error);
@@ -91,11 +86,15 @@ export async function fetchSimulationPages(query: string) {
     const count = await sql`
       SELECT COUNT(*)
       FROM simulations
-      WHERE
+      WHERE (
         simulation_name ILIKE ${`%${query}%`} OR
         owner ILIKE ${`%${query}%`} OR
         description ILIKE ${`%${query}%`} OR
-        created::text ILIKE ${`%${query}%`}
+        created::text ILIKE ${`%${query}%`} )
+      AND simulation_name NOT IN (
+        'Baseline',
+        'FCC and ITU Scenario'
+      )    
     `;
 
     const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
@@ -117,9 +116,9 @@ export async function fetchSimulationById(id: string) {
 }
 
 export async function fetchResultsById(id: string) {
-  console.log('fetchResultsById', id)
   try {
-    const data = await sql<PlotData>`SELECT * FROM results WHERE id = ${id}`;
+    const data = await sql<PlotData>`SELECT * FROM results WHERE simulation_id = ${id}`;
+    console.log(data.rows[0]);
     return data.rows[0];
     } catch (error) {
     console.error('Database Error:', error);

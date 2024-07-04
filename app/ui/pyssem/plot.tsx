@@ -11,6 +11,8 @@ const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 const SummaryGraph: React.FC<SummaryGraphProps> = ({results}) => {
     const plotData = results;
 
+    console.log(plotData.population_data[100])
+
     if (!plotData) {
         return <div>Loading...</div>;
     }
@@ -26,13 +28,12 @@ const SummaryGraph: React.FC<SummaryGraphProps> = ({results}) => {
     const speciesData = species.map(speciesName => {
         const populationsByTime = new Array(times.length).fill(0);
         population_data
-            .filter(data => data.spcies === speciesName) // Using the correct key here
+            .filter(data => data.species === speciesName) // Using the correct key here
             .forEach(data => {
                 data.populations.forEach((population, idx) => {
                     populationsByTime[idx] += population;
                 });
             });
-        console.log(`Species: ${speciesName}, PopulationsByTime:`, populationsByTime);
         return populationsByTime;
     });
 
@@ -43,9 +44,6 @@ const SummaryGraph: React.FC<SummaryGraphProps> = ({results}) => {
         mode: 'lines',
         name: speciesName
     }));
-
-    // Debugging: log the generated traces
-    console.log("Summary Traces:", summaryTraces);
 
     const summaryLayout: Partial<Plotly.Layout> = {
         title: 'Objects Over Time for Each Species',
