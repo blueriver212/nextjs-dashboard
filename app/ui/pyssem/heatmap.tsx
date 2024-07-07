@@ -15,7 +15,7 @@ const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
 const PlotlyHeatmap: React.FC<{ results: PlotData, simulation: SimulationForm }> = ({ results, simulation }) => {
     const { population_data, times, species } = results;
-    const speciesInfo = simulation.species;
+    const speciesInf = simulation.species;
 
     const numShells = simulation.scenario_properties.n_shells;
 

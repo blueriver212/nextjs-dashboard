@@ -42,9 +42,10 @@ export function UpdateSimulation({ id }: { id: string }) {
   );
 }
 
-export function DeleteSimulation({ id }: { id: string }) {
+export function DeleteSimulation({ id, name }: { id: string, name: string }) {
+
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const deleteSimulationByID = deleteSimulation.bind(null, id);
+  const deleteSimulationByID = deleteSimulation.bind(null, id, name);
 
   const handleDelete = () => {
     deleteSimulationByID();
@@ -52,27 +53,46 @@ export function DeleteSimulation({ id }: { id: string }) {
   };
  
   return (
-    <Dialog open={modalIsOpen} onOpenChange={() => setModalIsOpen(true)}>
-      <DialogTrigger className='rounded-md border p-2 hover:bg-gray-100'>
-        <TrashIcon className="w-5" />
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete this simulation? This action cannot be undone.
-          </DialogDescription>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button style={{ backgroundColor: 'red', alignItems: 'right' }} onClick={handleDelete}>Yes</Button>
-          </div>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+    <>
+      {name === "Example Simulation" ? (
+        <Dialog open={modalIsOpen} onOpenChange={setModalIsOpen}>
+          <DialogTrigger className='rounded-md border p-2 hover:bg-gray-100'>
+            <TrashIcon className="w-5" />
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Action Not Allowed</DialogTitle>
+              <DialogDescription>
+                Sorry! You cannot delete the example simulation.
+              </DialogDescription>
+              <Button style={{ backgroundColor: 'gray' }} onClick={() => setModalIsOpen(false)}>OK</Button>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Dialog open={modalIsOpen} onOpenChange={setModalIsOpen}>
+          <DialogTrigger className='rounded-md border p-2 hover:bg-gray-100'>
+            <TrashIcon className="w-5" />
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Delete</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this simulation? This action cannot be undone.
+              </DialogDescription>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Button style={{ backgroundColor: 'red' }} onClick={handleDelete}>Yes</Button>
+                <Button style={{ backgroundColor: 'gray' }} onClick={() => setModalIsOpen(false)}>No</Button>
+              </div>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 }
 
 export function ReviewSimulation({ id }: { id: string }) {
-  console.log('Review Simulation', id)
   return (
     <Link
       href={`/dashboard/pyssem/${id}/results`}
@@ -88,6 +108,8 @@ export function RunSimulation({ id }: { id: string }) {
   const [status, setStatus] = useState<string>('Pending');
   const [result, setResult] = useState<string>('');
 
+  console.log('Run Simulation', id)
+
   const runModel = async () => {
     try {
       const response = await fetch('http://localhost:5000/runmodel', {
@@ -101,7 +123,6 @@ export function RunSimulation({ id }: { id: string }) {
       if (response.ok) {
         const data = await response.json();
         const statusUrl = data.task_id;
-        console.log(statusUrl)
 
         if (statusUrl) {
           updateProgress(statusUrl);
@@ -127,19 +148,22 @@ export function RunSimulation({ id }: { id: string }) {
 
         if (data.state !== 'PENDING' && data.state !== 'PROGRESS') {
           setResult(data.result || data.state);
-          if (data.state === 'COMPLETE') {
-            revalidatePath('/dashboard/simulations');
-            redirect('/dashboard/simulations');
+          if (data.status === 'Task completed!' ) {
+            return true;
           }
         } else {
           setTimeout(() => updateProgress(statusUrl), 2000);
           console.log('Progress:', percent, 'Status:', data.status, 'Result:', data.result || data.state)
         }
+
+        return false;
       } else {
         alert('Failed to get progress');
+        return false;
       }
     } catch (error: any) {
       alert(error.toString());
+      return false;
     }
   };
 

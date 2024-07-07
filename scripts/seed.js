@@ -128549,69 +128549,80 @@ async function seedSimulations(client) {
     }
   }
 
-async function seedResults(client) {
+  async function seedResults(client) {
     try {
-      await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-  
-      const createTable = await client.sql`
-        DROP TABLE IF EXISTS results;
-        CREATE TABLE IF NOT EXISTS results (
-          id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-          times FLOAT8[] NOT NULL,
-          n_shells INT NOT NULL,
-          species TEXT[] NOT NULL,
-          Hmid FLOAT8[] NOT NULL,
-          max_altitude FLOAT8 NOT NULL,
-          min_altitude FLOAT8 NOT NULL,
-          population_data JSONB NOT NULL,
-          launch JSONB,
-          simulation_id UUID REFERENCES simulations(id)
-        );
-      `;
-  
-      console.log(`Created "results" table`);
-  
-      async function fetchSimulationId(simulationName) {
-        const simulation = await client.sql`
-          SELECT * FROM simulations WHERE simulation_name = ${simulationName}
+        await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+
+        const createTable = await client.sql`
+            DROP TABLE IF EXISTS results;
+            CREATE TABLE IF NOT EXISTS results (
+                id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+                times FLOAT8[] NOT NULL,
+                n_shells INT NOT NULL,
+                species TEXT[] NOT NULL,
+                Hmid FLOAT8[] NOT NULL,
+                max_altitude FLOAT8 NOT NULL,
+                min_altitude FLOAT8 NOT NULL,
+                population_data JSONB NOT NULL,
+                launch JSONB,
+                simulation_id UUID REFERENCES simulations(id),
+                UNIQUE(simulation_id) -- Add unique constraint
+            );
         `;
-  
-        if (simulation.count === 0) {
-          throw new Error(`${simulationName} simulation not found`);
+
+        console.log(`Created "results" table`);
+
+        async function fetchSimulationId(simulationName) {
+            const simulation = await client.sql`
+                SELECT * FROM simulations WHERE simulation_name = ${simulationName}
+            `;
+
+            if (simulation.count === 0) {
+                throw new Error(`${simulationName} simulation not found`);
+            }
+
+            console.log(`${simulationName} simulation ID: ${simulation.rows[0].id}`);
+            return simulation.rows[0].id;
         }
-  
-        console.log(`${simulationName} simulation ID: ${simulation.rows[0].id}`);
-        return simulation.rows[0].id;
-      }
-  
-      async function insertResult(data, simulationId) {
-        await client.sql`
-          INSERT INTO results (times, n_shells, species, Hmid, max_altitude, min_altitude, population_data, launch, simulation_id)
-          VALUES (
-            ${data.times}, ${data.n_shells},
-            ${data.species}, ${data.Hmid}, ${data.max_altitude},
-            ${data.min_altitude}, ${JSON.stringify(data.population_data)},
-            ${JSON.stringify(data.launch)}, ${simulationId}
-          );
-        `;
-      }
-  
-      const baselineSimulationId = await fetchSimulationId('Baseline');
-      await insertResult(baselineData, baselineSimulationId);
-  
-      const ituscnearioId = await fetchSimulationId('FCC and ITU Scenario');
-      await insertResult(fccData, ituscnearioId);
-  
-      return {
-        createTable,
-        baselineInsert: baselineData,
-        ituscnearioInsert: fccData,
-      };
+
+        async function insertResult(data, simulationId) {
+            await client.sql`
+                INSERT INTO results (times, n_shells, species, Hmid, max_altitude, min_altitude, population_data, launch, simulation_id)
+                VALUES (
+                    ${data.times}, ${data.n_shells},
+                    ${data.species}, ${data.Hmid}, ${data.max_altitude},
+                    ${data.min_altitude}, ${JSON.stringify(data.population_data)},
+                    ${JSON.stringify(data.launch)}, ${simulationId}
+                );
+            `;
+        }
+
+        const baselineSimulationId = await fetchSimulationId('Baseline');
+        await insertResult(baselineData, baselineSimulationId);
+
+        const ituscnearioId = await fetchSimulationId('FCC and ITU Scenario');
+        await insertResult(fccData, ituscnearioId);
+
+        return {
+            createTable,
+            baselineInsert: baselineData,
+            ituscnearioInsert: fccData,
+        };
     } catch (error) {
-      console.error('Error seeding results:', error);
-      throw error;
+        console.error('Error seeding results:', error);
+        throw error;
     }
-  }
+}
+
+async function main() {
+    const client = await db.connect();
+
+    await seedSimulations(client);
+
+    await seedResults(client);
+
+    await client.end();
+}
   
 
 async function main() {

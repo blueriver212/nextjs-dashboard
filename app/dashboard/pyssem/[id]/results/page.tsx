@@ -11,13 +11,14 @@ export default async function Results({ params }: { params: { id: string } }) {
 
     const id = params.id;
 
+    const simulation = await fetchSimulationById(id);
+
     const [results] = await Promise.all([
         fetchResultsById(id),
     ]);
 
-    const simulation = await fetchSimulationById(id);
 
-    if (!simulation) {
+    if (!results) {
         notFound();
     }
 
@@ -44,7 +45,7 @@ export default async function Results({ params }: { params: { id: string } }) {
 
                 <SummaryGraph results={results}/>
 
-                <h1 className="text-2xl font-bold mt-8 mb-4">Parameters</h1>
+                <h1 className="text-2xl font-bold mt-8 mb-4">Model Parameters</h1>
                 <SimulationSummary simulation={simulation} />
 
                 <h1 className="text-2xl font-bold mt-8 mb-4">Launch</h1>

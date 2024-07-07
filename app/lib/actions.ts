@@ -74,12 +74,32 @@ export async function createSimulation(formData: SimulationForm) {
     redirect('/dashboard/simulations');
   }
 }
-  export async function deleteSimulation(id: string) {
-    try {
-      await sql`DELETE FROM simulations WHERE id = ${id}`;
-      revalidatePath('/dashboard/simulations');
-      return { message: 'Deleted Simulation.' };
-    } catch (error) {
-      return { message: 'Database Error: Failed to Delete Simulation.' };
-    }
+
+
+export async function deleteSimulation(id: string, name: string) {
+  
+  if (name === 'Example Simulation') {
+    return { message: 'Failed to Delete Simulation.' };
   }
+  
+  
+  try {
+    // Start a transactio
+
+    await sql`
+    DELETE FROM results WHERE simulation_id = ${id}
+    `;
+
+    // Delete the simulation
+    const deleteSimulationResult = await sql`
+      DELETE FROM simulations WHERE id = ${id}
+    `;
+    
+    // Revalidate and redirect only if the deletion was successful
+    revalidatePath('/dashboard/simulations');
+    redirect('/dashboard/simulations');
+  } catch (error) {
+    console.error('Error deleting simulation:', error);
+    return { message: 'Database Error: Failed to Delete Simulation.' };
+  }
+}

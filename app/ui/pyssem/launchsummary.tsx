@@ -10,7 +10,9 @@ const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 const LaunchGraph: React.FC<SummaryGraphProps> = ({ results }) => {
   const plotData = results;
 
-  if (!plotData.launch) {
+  console.log("Launch Graph Data:", plotData)
+
+  if (!plotData.launch || plotData.launch.length === 0) {
     return <div>There are no launches for this simulation</div>;
   }
 

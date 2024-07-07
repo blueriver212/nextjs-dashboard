@@ -2,6 +2,7 @@
 import { FormEvent, useState, useEffect } from 'react';
 import { SimulationForm, SimulationNames, Species } from '@/app/lib/definitions';
 import { Switch } from "@/components/ui/switch";
+import { Alert } from "@/components/ui/alert";
 import Link from 'next/link';
 import {
   CalendarIcon,
@@ -43,7 +44,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from '@/app/ui/button';
 import { Button as ShadButton } from '@/components/ui/button';
 import { createSimulation, updateSimulation } from '@/app/lib/actions';
-
 const { v4: uuidv4 } = require('uuid');
 
 const speciesTemplates: Species[] = [
@@ -146,127 +146,6 @@ const speciesTemplates: Species[] = [
     launch_func: null
   }
 ];
-
-// export default function Form({
-//   sim_names,
-//   simulation,
-//   edit
-// }: {
-//   sim_names: SimulationNames[];
-//   simulation: SimulationForm | null;
-//   edit: boolean;
-// }) {
-
-//   // Creating one form that handles both edit and new based on whether the edit flag is set to true
-//   const [newSpecies, setNewSpecies] = useState<Species | null>(null);
-//   const [selectedTemplate, setSelectedTemplate] = useState('');
-//   const [species, setSpecies] = useState<Species[]>([]);
-
-//   const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-//     const template = speciesTemplates.find((species) => species.sym_name === e.target.value);
-//     if (template) {
-//       setNewSpecies({ ...template }); 
-//     }
-//     setSelectedTemplate(e.target.value);
-//   };
-
-//   // Create a hook that hides certain fields based on the toggle
-//   const [isVisible, setVisibility] = useState(true);
-
-//   const toggleVisibility = () => {
-//     setVisibility(!isVisible);
-//   };
-
-//   // This will handle when new species are added to the simulation
-//   useEffect(() => {
-//     if (edit && simulation) {
-//       setSpecies(simulation.species);
-//     }
-//   }, [edit, simulation]);
-
-//   const [isEditing, setIsEditing] = useState(false);
-//   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-//   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-//   const handleEditSpecies = (e: React.FormEvent, species: Species, index: number) => {
-//     e.preventDefault();
-//     setIsEditing(true);
-//     setNewSpecies({ ...species });
-//     setEditingIndex(index);
-//     setIsDialogOpen(true);
-//   };
-
-//   const handleAddSpecies = (e: React.FormEvent) => {
-//     e.preventDefault();
-//     e.stopPropagation();
-//     if (isEditing) {
-//         if (editingIndex !== null && newSpecies !== null) {
-//             const newSpeciesList = [...species];
-//             newSpeciesList[editingIndex] = newSpecies;
-//             setSpecies(newSpeciesList);
-//             setEditingIndex(null);
-//         }
-//     } else {
-//         if (newSpecies !== null) {
-//             console.log(newSpecies)
-//             setSpecies([...species, newSpecies]);
-//         }
-//     }
-//     setNewSpecies(null);
-//     setIsEditing(false);
-// };
-
-//   const closeDialog = () => {
-//     setIsDialogOpen(false);
-//   };
-
-//   const handleDeleteSpecies = (e: React.MouseEvent, index: number) => {
-//     e.preventDefault();
-//     const newSpeciesList = [...species];
-//     newSpeciesList.splice(index, 1);
-//     setSpecies(newSpeciesList);
-//   };
-
-//   const handleSim = async (event: React.FormEvent<HTMLFormElement>) => {
-//     event.preventDefault();
-//     const form = new FormData(event.currentTarget);
-
-//     // Handle the non-required fields
-//     if (!form.get('description')) {
-//       form.set('description', '');
-//     }
-
-//     // This function will take the current simulation data and format it correctly.
-//     const sim: SimulationForm = {
-//       id: uuidv4(),
-//       simulation_name: form.get('simulationName') as string,
-//       owner: form.get('owner') as string,
-//       description: form.get('description') as string,
-//       created: new Date().toISOString(),
-//       status: "not started",
-//       scenario_properties: {
-//         start_date: form.get('startDate') as string,
-//         simulation_duration: parseInt(form.get('simulationDuration') as string),
-//         steps: parseInt(form.get('steps') as string),
-//         max_altitude: parseInt(form.get('maxAltitude') as string),
-//         min_altitude: parseInt(form.get('minAltitude') as string),
-//         n_shells: parseInt(form.get('nShells') as string),
-//         integrator: form.get('integrator') as string,
-//         density_model: form.get('densityModel') as string,
-//         LC: parseFloat(form.get('launchCoefficient') as string),
-//         v_imp: parseFloat(form.get('impactVelocity') as string),
-//         launch_function: "Constant"
-//       },
-//       species: species,
-//       modified: new Date().toISOString(),
-//     };
-
-//     if (edit) {
-//       await updateSimulation(sim);
-//     } else {
-//       await createSimulation(sim);
-//     }
-//   };
 
 export default function Form({ sim_names, simulation, edit }: { sim_names: SimulationNames[], simulation: SimulationForm | null, edit: boolean}) {
   // Creating one form that handle both edit and new based on whether the edit flag is set to true
@@ -377,6 +256,18 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
       },
       species: species,
       modified: new Date().toISOString(),
+    }
+
+    if (species.length === 0) {
+      alert('Please add at least one species to the simulation!');
+      return;
+    }
+
+    // if one of the species does not have a sym_name of N, then alert the user
+    const hasN = species.some((spec) => spec.sym_name === 'N');
+    if (!hasN) {
+      alert('Please add at least one debris species to the simulation!');
+      return;
     }
 
     createSimulation(sim);

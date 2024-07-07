@@ -48,12 +48,13 @@ export default async function SimulationTable({
                 </div>
                 <div className="flex w-full items-center justify-between pt-4">
                   <div className="flex justify-end gap-3">
-                    {simulation.status === 'completed' && <ReviewSimulation id={simulation.id} />}
+                    {/* {simulation.status === 'completed' && <ReviewSimulation id={simulation.id} />} */}
                     {simulation.status === 'not started' && <RunSimulation id={simulation.id} />}
                     {simulation.status === 'failed' && <RunSimulation id={simulation.id} />}
                     {simulation.status === 'in progress' && <StopSimulation id={simulation.id} />}
+                    <ReviewSimulation id={simulation.id} />
                     {!examplePage && <UpdateSimulation id={simulation.id} />}
-                    {!examplePage && <DeleteSimulation id={simulation.id} />}
+                    {!examplePage && <DeleteSimulation id={simulation.id} name={simulation.simulation_name} />}
                   </div>
                 </div>
               </div>
@@ -96,12 +97,13 @@ export default async function SimulationTable({
                     </TableCell>
                     <TableCell className="whitespace-nowrap py-3 pl-6 pr-3">
                       <div className="flex justify-end gap-3">
-                        {simulation.status === 'completed' && <ReviewSimulation id={simulation.id} />}
+                        {/* {simulation.status === 'completed' && <ReviewSimulation id={simulation.id} />} */}
                         {simulation.status === 'not started' && <RunSimulation id={simulation.id} />}
                         {simulation.status === 'failed' && <RunSimulation id={simulation.id} />}
                         {simulation.status === 'in progress' && <StopSimulation id={simulation.id} />}
+                        <ReviewSimulation id={simulation.id} />
                         {!examplePage && <UpdateSimulation id={simulation.id} />}
-                        {!examplePage && <DeleteSimulation id={simulation.id} />}
+                        {!examplePage && <DeleteSimulation id={simulation.id} name={simulation.simulation_name} />}
                       </div>
                     </TableCell>
                   </TableRow>

@@ -11,8 +11,6 @@ const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 const SummaryGraph: React.FC<SummaryGraphProps> = ({results}) => {
     const plotData = results;
 
-    console.log(plotData.population_data[100])
-
     if (!plotData) {
         return <div>Loading...</div>;
     }
