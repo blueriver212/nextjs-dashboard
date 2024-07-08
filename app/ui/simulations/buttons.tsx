@@ -110,9 +110,12 @@ export function RunSimulation({ id }: { id: string }) {
 
   console.log('Run Simulation', id)
 
+  const url =  process.env.API_ROOT + 'runmodel';
+  console.log("url: " + url)
+
   const runModel = async () => {
     try {
-      const response = await fetch('http://localhost:5000/runmodel', {
+      const response = await fetch("http://ec2-63-35-217-103.eu-west-1.compute.amazonaws.com:5000/runmodel", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,6 +128,7 @@ export function RunSimulation({ id }: { id: string }) {
         const statusUrl = data.task_id;
 
         if (statusUrl) {
+          console.log(statusUrl)
           updateProgress(statusUrl);
         } else {
           alert('Failed to get status URL');

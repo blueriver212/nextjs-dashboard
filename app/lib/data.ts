@@ -118,7 +118,6 @@ export async function fetchSimulationById(id: string) {
 export async function fetchResultsById(id: string) {
   try {
     const data = await sql<PlotData>`SELECT * FROM results WHERE simulation_id = ${id}`;
-    console.log(data.rows[0]);
     return data.rows[0];
     } catch (error) {
     console.error('Database Error:', error);
