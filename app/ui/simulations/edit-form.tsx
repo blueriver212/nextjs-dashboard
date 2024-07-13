@@ -30,38 +30,47 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from '@/app/ui/button';
 import { Button as ShadButton } from '@/components/ui/button';
-import { createSimulation, updateSimulation} from '@/app/lib/actions';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { updateSimulation} from '@/app/lib/actions';
 import { Species } from '@/app/lib/definitions';
 const { v4: uuidv4 } = require('uuid');
 import { useEffect } from 'react';
+import { speciesTemplates } from '@/app/lib/definitions';
 
 export default function Form({ sim_names, simulation, edit }: { sim_names: SimulationNames[], simulation: SimulationForm | null, edit: boolean}) { 
   // Create a hook that hides certain fields based on the toggle
   const [isVisible, setVisibility] = useState(true);
-
   const toggleVisibility = () => {
     setVisibility(!isVisible);
   }
 
   // This will handle when new species are added to the simulation
-  const [species, setSpecies] = useState<Species[]>([]);
   const [newSpecies, setNewSpecies] = useState<Species | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [species, setSpecies] = useState<Species[]>([]);
+
+  const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const template = speciesTemplates.find((species) => species.sym_name === e.target.value);
+    if (template) {
+      setNewSpecies({ ...template }); 
+    }
+    setSelectedTemplate(e.target.value);
+  };
 
 
   useEffect(() => {
     // print the simluation.species type to the console
-    console.log('ime here')
     setSpecies(edit && simulation ? simulation.species : []);
   }, [edit, simulation]);
   
@@ -93,7 +102,6 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
           }
       } else {
           if (newSpecies !== null) {
-              console.log(newSpecies)
               setSpecies([...species, newSpecies]);
           }
       }
@@ -392,124 +400,269 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
 
         <Table>
         <TableCaption>
-          <Dialog open={isDialogOpen} onOpenChange={closeDialog}>
-            <DialogTrigger>{isEditing ? 'Edit Species' : '+ Add New Species +'}</DialogTrigger>
-              <DialogContent >
-                <DialogHeader>
-                  <DialogTitle>{isEditing ? 'Edit Species' : 'New Species'}</DialogTitle>
-                  <DialogDescription>
+            <Sheet open={isDialogOpen} onOpenChange={closeDialog}>
+              <SheetTrigger>{isEditing ? 'Edit Species' : '+ Add New Species +'}</SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>{isEditing ? 'Edit Species' : 'New Species'}</SheetTitle>
+                  <SheetDescription>
                     {isEditing ? 'Edit an existing species in your simulation' : 'Add a new species to your simulation'}
-                  </DialogDescription>
-                </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <form onSubmit={handleAddSpecies}>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                    <Label htmlFor="speciesName" className="text-right">
-                      Name
-                    </Label>
-                    <Input
-                      id="speciesName"
-                      defaultValue="Debris"
-                      className="col-span-2"
-                      required={true}
-                      value={newSpecies?.sym_name?.toString() ?? ''}
-                      onChange={(e) => setNewSpecies({ ...newSpecies, sym_name: e.target.value })}
+                  </SheetDescription>
+                </SheetHeader>
+                <ScrollArea className="w-full h-full rounded-md border p-4">    
+            <div className="grid gap-10 py-4">
+              <form onSubmit={handleAddSpecies}>
+              <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                <Label htmlFor="speciesTemplate" className="col-span-4">
+                  Select Species Template:
+                </Label>
+                <select
+                  id="speciesTemplate"
+                  className="col-span-4"
+                  value={selectedTemplate}
+                  onChange={handleTemplateChange}
+                >
+                  <option value="">Select a template</option>
+                  <option value="Sns">Non-station-keeping Satellite</option>
+                  <option value="B">Rocket Body</option>
+                  <option value="Su">Station-keeping Satellite</option>
+                  <option value="S">Coordinated Satellite</option>
+                  <option value="N">Debris</option>
+                  <option value="C">Candidate Satellite</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                <Label htmlFor="speciesName" className="text-center">
+                  Name
+                </Label>
+                <Input
+                  id="speciesName"
+                  className="col-span-2"
+                  required={true}
+                  value={newSpecies?.sym_name ?? ''}
+                  readOnly
+                />
+              </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="cd" className="text-center">
+                    Cd
+                  </Label>
+                  <Input
+                    id="cd"
+                    type="number"
+                    className="col-span-2"
+                    required={true}
+                    value={newSpecies?.Cd ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, Cd: parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="mass" className="text-center">
+                    Mass (kg)
+                  </Label>
+                  <Input
+                    id="mass"
+                    type="number"
+                    className="col-span-2"
+                    required={true}
+                    value={newSpecies?.mass?.toString() ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, mass: parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="radius" className="text-center">
+                    Radius (m)
+                  </Label>
+                  <Input
+                    id="radius"
+                    type="number"
+                    required={true}
+                    className="col-span-2"
+                    value={newSpecies?.radius?.toString() ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, radius: parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="area" className="text-center">
+                    Area (m²)
+                  </Label>
+                  <Input
+                    id="area"
+                    type="number"
+                    className="col-span-2"
+                    value={newSpecies?.A?.toString() ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, A: parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="active" className="text-center">
+                    Active
+                  </Label>
+                  <div className="flex justify-center items-center col-span-2">
+                    <Switch
+                      id="active"
+                      checked={newSpecies?.active ?? false}
+                      defaultChecked={true}
+                      onCheckedChange={() => setNewSpecies(prev => ({ ...prev, active: !prev?.active }))}
                     />
                   </div>
-                    <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                      <Label htmlFor="cd" className="text-right">
-                        Cd
-                      </Label>
-                      <Input
-                        id="cd"
-                        type='number'
-                        className="col-span-1"
-                        required={true}
-                        value={newSpecies?.Cd}
-                        onChange={(e) => setNewSpecies({ ...newSpecies, Cd: e.target.value })}
-                      />
-                    </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                      <Label htmlFor="mass" className="text-right">
-                          Mass (kg)
-                      </Label>
-                      <Input
-                          id="mass"
-                          type='text'
-                          className="col-span-1"
-                          required={true}
-                          defaultValue={newSpecies?.mass?.toString()}
-                          onChange={(e) => setNewSpecies({ ...newSpecies, mass: parseFloat(e.target.value) })}
-                      />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="maneuverable" className="text-center">
+                    Maneuverable
+                  </Label>
+                  <div className="flex justify-center items-center col-span-2">
+
+                  <Switch
+                    id="maneuverable"
+                    className="col-span-2"
+                    checked={newSpecies?.maneuverable ?? false}
+                    onCheckedChange={() => setNewSpecies({ ...newSpecies, maneuverable: !newSpecies?.maneuverable })}
+                  />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                      <Label htmlFor="radius" className="text-right">
-                          Radius (m)
-                      </Label>
-                      <Input
-                          id="radius"
-                          type='number'
-                          required={true}
-                          className="col-span-1"
-                          defaultValue={newSpecies?.radius?.toString() ?? ''}
-                          onChange={(e) => setNewSpecies({ ...newSpecies, radius: parseFloat(e.target.value) })}
-                      />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="deltat" className="text-center">
+                    Delta t
+                  </Label>
+                  <Input
+                    id="deltat"
+                    type="number"
+                    className="col-span-2"
+                    value={newSpecies?.deltat?.toString() ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, deltat: parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="pmd" className="text-center">
+                    PMD (%)
+                  </Label>
+                  <div className="flex items-center col-span-2">
+                    <Input
+                      id="pmd"
+                      type="range"
+                      required={true}
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      value={newSpecies?.Pm ?? 0}
+                      onChange={(e) => setNewSpecies({ ...newSpecies, Pm: parseFloat(e.target.value) })}
+                    />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                      <Label htmlFor="area" className="text-right">
-                          Area (m)
-                      </Label>
-                      <Input
-                          id="area"
-                          type='number'
-                          className="col-span-1"
-                          defaultValue={newSpecies?.A?.toString() ?? ''}
-                          onChange={(e) => setNewSpecies({ ...newSpecies, A: parseFloat(e.target.value) } as Species)}
-                      />
+                  <div className="flex justify-between">
+                  <span className="ml-2">{newSpecies?.Pm ?? 0}</span>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                      <Label htmlFor="active" className="text-right">
-                          Active
-                      </Label>
-                      <Switch
-                          id="active"
-                          className="col-span-3"
-                          defaultValue={newSpecies?.active?.toString() ?? ''}
-                          onCheckedChange={() => newSpecies && setNewSpecies({ ...newSpecies, active: !newSpecies.active })}
-                      />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="alpha" className="text-center">
+                    Alpha
+                  </Label>
+                  <Input
+                    id="alpha"
+                    type="number"
+                    className="col-span-2"
+                    value={newSpecies?.alpha?.toString() ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, alpha: parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="alpha_active" className="text-center">
+                    Alpha Active
+                  </Label>
+                  <Input
+                    id="alpha_active"
+                    type="number"
+                    className="col-span-2"
+                    value={newSpecies?.alpha_active?.toString() ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, alpha_active: parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="slotted" className="text-center">
+                    Slotted
+                  </Label>
+                  <div className="flex justify-center items-center col-span-2">
+                    <Switch
+                      id="slotted"
+                      className="col-span-2"
+                      checked={newSpecies?.slotted ?? false}
+                      onCheckedChange={() => setNewSpecies({ ...newSpecies, slotted: !newSpecies?.slotted })}
+                    />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                      <Label htmlFor="drag" className="text-right">
-                          Drag Effected?
-                      </Label>
-                      <Switch
-                          defaultChecked={true}
-                          id="drag"
-                          className="col-span-1"
-                          checked={newSpecies?.drag_effected}
-                          onCheckedChange={() => setNewSpecies({ ...newSpecies, drag_effected: !newSpecies?.drag_effected })}
-                      />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="slotting_effectiveness" className="text-right">
+                    Slotting Effectiveness
+                  </Label>
+                  <Input
+                    id="slotting_effectiveness"
+                    type="number"
+                    className="col-span-2"
+                    value={newSpecies?.slotting_effectiveness?.toString() ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, slotting_effectiveness: parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="drag" className="text-right">
+                    Affected By Drag?
+                  </Label>
+                  <div className="flex justify-center items-center col-span-2">
+                    <Switch
+                      id="drag"
+                      className="col-span-2"
+                      checked={newSpecies?.drag_effected ?? false}
+                      onCheckedChange={() => setNewSpecies({ ...newSpecies, drag_effected: !newSpecies?.drag_effected })}
+                    />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4 mt-3">
-                      <Label htmlFor="pmd" className="text-right">
-                          PMD (%)
-                      </Label>
-                      <Input
-                          id="pmd"
-                          type='number'
-                          defaultValue="0.9"
-                          required={true}
-                          value={newSpecies?.Pm ?? ''}
-                          onChange={(e) => setNewSpecies({ ...newSpecies, Pm: parseFloat(e.target.value) })}
-                      />
-                  </div>
-                    <div className="mt-6 flex justify-end gap-4 mt-3">
-                      <ShadButton type="submit">{isEditing ? 'Update Species' : 'Add Species'}</ShadButton>
-                    </div>
-                </form>
-              </div>
-            </DialogContent>
-          </Dialog>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="launch_func" className="text-right">
+                    Launch Function
+                  </Label>
+                  <Input
+                    id="launch_func"
+                    type="text"
+                    hidden={true}
+                    readOnly
+                    className="col-span-2"
+                    value={newSpecies?.launch_func ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, launch_func: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="pmd_func" className="text-right">
+                    PMD Function
+                  </Label>
+                  <Input
+                    id="pmd_func"
+                    type="text"
+                    readOnly
+                    className="col-span-2"
+                    value={newSpecies?.pmd_func ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, pmd_func: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-3">
+                  <Label htmlFor="drag_func" className="text-right">
+                    Drag Function
+                  </Label>
+                  <Input
+                    id="drag_func"
+                    type="text"
+                    className="col-span-2"
+                    readOnly
+                    value={newSpecies?.drag_func ?? ''}
+                    onChange={(e) => setNewSpecies({ ...newSpecies, drag_func: e.target.value })}
+                  />
+                </div>
+                <div className="mt-6 flex justify-end gap-4 mt-3">
+                  <ShadButton type="submit">{isEditing ? 'Update Species' : 'Add Species'}</ShadButton>
+                </div>
+              </form>
+            </div>
+            </ScrollArea>
+          </SheetContent>
+        </Sheet>
         </TableCaption>
         <TableHeader>
           <TableRow>

@@ -31,7 +31,8 @@ export default async function SimulationTable({
     <div className="mt-6 flow-root w-full">
       <div className="inline-block w-full align-middle">
         <div className="overflow-hidden rounded-lg bg-gray-50 p-2 md:pt-0">
-          <div className="md:hidden">
+          {/* Mobile View */}
+          <div className="block md:hidden">
             {simulations?.map((simulation) => (
               <div
                 key={simulation.id}
@@ -50,7 +51,7 @@ export default async function SimulationTable({
                   <div className="flex justify-end gap-3">
                     {/* {simulation.status === 'completed' && <ReviewSimulation id={simulation.id} />} */}
                     {simulation.status === 'not started' && <RunSimulation id={simulation.id} />}
-                    {simulation.status === 'failed' && <RunSimulation id={simulation.id} />}
+                    {simulation.status === 'failed' && <RunSimulation id={simulation.id}/>}
                     {simulation.status === 'in progress' && <StopSimulation id={simulation.id} />}
                     <ReviewSimulation id={simulation.id} />
                     {!examplePage && <UpdateSimulation id={simulation.id} />}
@@ -60,8 +61,9 @@ export default async function SimulationTable({
               </div>
             ))}
           </div>
-          <div className="overflow-x-auto">
-            <Table className="w-full min-w-full text-gray-900 md:table">
+          {/* Desktop View */}
+          <div className="hidden md:block overflow-x-auto">
+            <Table className="w-full min-w-full text-gray-900">
               <TableHeader>
                 <TableRow>
                   <TableHead className="px-4 py-5 font-medium sm:pl-6">Simulation Name</TableHead>
@@ -98,7 +100,7 @@ export default async function SimulationTable({
                     <TableCell className="whitespace-nowrap py-3 pl-6 pr-3">
                       <div className="flex justify-end gap-3">
                         {/* {simulation.status === 'completed' && <ReviewSimulation id={simulation.id} />} */}
-                        {simulation.status === 'not started' && <RunSimulation id={simulation.id} />}
+                        {simulation.status === 'not started' && <RunSimulation id={simulation.id}/>}
                         {simulation.status === 'failed' && <RunSimulation id={simulation.id} />}
                         {simulation.status === 'in progress' && <StopSimulation id={simulation.id} />}
                         <ReviewSimulation id={simulation.id} />
@@ -115,5 +117,4 @@ export default async function SimulationTable({
       </div>
     </div>
   );
-   
 }

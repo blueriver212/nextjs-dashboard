@@ -85,15 +85,15 @@ const PlotlyHeatmap: React.FC<{ results: PlotData, simulation: SimulationForm }>
                                     <div><strong>Drag Func:</strong> {speciesData.drag_func}</div>
                                 </div>
                             )}
-                            <div style={{ display: 'flex', flexDirection: 'row', gap: '20px', marginBottom: '50px' }}>
-                                <div style={{ flex: 1 }}>
+                            <div className="flex flex-col md:flex-row gap-4 md:gap-20 mb-12">
+                                <div className="flex-1">
                                     <Plot
                                         data={[heatmapTrace]}
                                         layout={heatmapLayout}
                                         style={{ width: '100%', height: '400px' }}
                                     />
                                 </div>
-                                <div style={{ flex: 1 }}>
+                                <div className="flex-1">
                                     <Plot
                                         data={lineGraphTraces}
                                         layout={lineGraphLayout}

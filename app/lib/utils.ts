@@ -1,3 +1,6 @@
+import Papa from 'papaparse';
+import { PlotData } from './definitions';
+
 export const generatePagination = (currentPage: number, totalPages: number) => {
   // If the total number of pages is 7 or less,
   // display all pages without any ellipsis.
@@ -30,3 +33,50 @@ export const generatePagination = (currentPage: number, totalPages: number) => {
     totalPages,
   ];
 };
+
+
+export const convertPlotDataToCSV = (plotData: PlotData) => {
+  const flattenedData = plotData.population_data.map(pd => ({
+      ...pd,
+      times: plotData.times,
+      max_altitude: plotData.max_altitude,
+      min_altitude: plotData.min_altitude,
+      Hmid: plotData.Hmid,
+      species: plotData.species,
+      simulation_id: plotData.simulation_id
+  }));
+
+  const csv = Papa.unparse(flattenedData);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'results.csv');
+  link.click();
+};
+
+// export const DownloadButton = ({ results }: { results: PlotData }) => {
+//   const convertPlotDataToCSV = (plotData: PlotData) => {
+//       const flattenedData = plotData.population_data.map(pd => ({
+//           ...pd,
+//           times: plotData.times,
+//           max_altitude: plotData.max_altitude,
+//           min_altitude: plotData.min_altitude,
+//           Hmid: plotData.Hmid,
+//           species: plotData.species,
+//           simulation_id: plotData.simulation_id
+//       }));
+
+//       const csv = Papa.unparse(flattenedData);
+//       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+//       const url = URL.createObjectURL(blob);
+//       const link = document.createElement('a');
+//       link.setAttribute('href', url);
+//       link.setAttribute('download', 'results.csv');
+//       link.click();
+//   };
+
+//   return (
+//       <div></div>
+//   );
+// };

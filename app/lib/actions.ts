@@ -5,7 +5,7 @@ import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { SimulationForm } from './definitions';
- 
+
 const SimulationSchema = z.object({
   id: z.string(),
   simulation_name: z.string().nullable(),
@@ -26,7 +26,7 @@ export async function updateSimulation( formData: SimulationForm) {
   try {
     await sql`
         UPDATE simulations
-        SET simulation_name = ${simulation_name}, owner = ${owner}, description = ${description}
+        SET simulation_name = ${simulation_name}, owner = ${owner}, description = ${description}, status = 'not started'
         WHERE id = ${formData.id}
       `;
   } catch (error) {
@@ -81,11 +81,8 @@ export async function deleteSimulation(id: string, name: string) {
   if (name === 'Example Simulation') {
     return { message: 'Failed to Delete Simulation.' };
   }
-  
-  
-  try {
-    // Start a transactio
 
+  try {
     await sql`
     DELETE FROM results WHERE simulation_id = ${id}
     `;
@@ -102,4 +99,22 @@ export async function deleteSimulation(id: string, name: string) {
     console.error('Error deleting simulation:', error);
     return { message: 'Database Error: Failed to Delete Simulation.' };
   }
+}
+
+export async function checkSimulationIsComplete(id: string) {
+  // try{
+  //   const simulation = await sql<SimulationForm>`
+  //       SELECT * FROM simulations WHERE id = ${id}
+  //     `;
+  //     console.log(simulation);
+  //     if (simulation.rows[0].status === 'completed') {
+  //       revalidatePath('/dashboard/simulations');
+  //       redirect('/dashboard/simulations');
+  //     }
+  // } catch (error) {
+  //   console.error('Database Error:', error);
+  //   throw new Error('Failed to check simulation status.');
+  // }
+  revalidatePath('/dashboard/simulations');
+  redirect('/dashboard/simulations');
 }

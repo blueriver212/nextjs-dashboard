@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useState } from 'react';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
+import { checkSimulationIsComplete } from '@/app/lib/actions';
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css'; 
 
 export function CreateSimulation() {
   return (
@@ -107,15 +108,14 @@ export function RunSimulation({ id }: { id: string }) {
   const [progress, setProgress] = useState<number>(0);
   const [status, setStatus] = useState<string>('Pending');
   const [result, setResult] = useState<string>('');
+  const [isRunning, setIsRunning] = useState<boolean>(false); // State to track if the simulation is running
 
-  console.log('Run Simulation', id)
 
-  const url =  process.env.API_ROOT + 'runmodel';
-  console.log("url: " + url)
-
+  // http://ec2-63-35-217-103.eu-west-1.compute.amazonaws.com:5000/runmodel
   const runModel = async () => {
+    setIsRunning(true);
     try {
-      const response = await fetch("http://ec2-63-35-217-103.eu-west-1.compute.amazonaws.com:5000/runmodel", {
+      const response = await fetch("http://localhost:5000/runmodel", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +153,8 @@ export function RunSimulation({ id }: { id: string }) {
         if (data.state !== 'PENDING' && data.state !== 'PROGRESS') {
           setResult(data.result || data.state);
           if (data.status === 'Task completed!' ) {
-            return true;
+            await checkSimulationIsComplete(id);
+            return true
           }
         } else {
           setTimeout(() => updateProgress(statusUrl), 2000);
@@ -173,21 +174,28 @@ export function RunSimulation({ id }: { id: string }) {
 
   return (
     <div>
-      <button
-        onClick={runModel}
-        className="rounded-md border p-2 hover:bg-gray-100"
-      >
-        <PlayIcon className="w-5" fill="lightgreen" color="lightgreen" />
-      </button>
-      <div id="progress">
-        <div className="progress">
-          <div style={{ width: `${progress.toString()}%`, backgroundColor: '#44f' }}></div>
-          <div>{progress}%</div>
-          <div>{status}</div>
-          <div>&nbsp;{result && `Result: ${result}`}</div>
+      {!isRunning ? (
+        <button
+          onClick={runModel}
+          className="rounded-md border p-2 hover:bg-gray-100"
+        >
+          <PlayIcon className="w-5" fill="lightgreen" color="lightgreen" />
+        </button>
+      ) : (
+        <div id="progress" className="w-20 h-20">
+          <CircularProgressbar
+            value={progress}
+            className='rounded-md border p-2 hover:bg-gray-100'
+            text={`${Math.round(progress)}%`}
+            styles={buildStyles({
+              textSize: '16px',
+              pathColor: '#44f',
+              textColor: '#000',
+            })}
+          />
         </div>
-        <hr />
-      </div>
+      )}
+      <hr />
     </div>
   );
 }
