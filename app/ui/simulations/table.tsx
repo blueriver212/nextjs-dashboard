@@ -71,7 +71,7 @@ export default async function SimulationTable({
                   <TableHead className="px-3 py-5 font-medium truncate">Description</TableHead>
                   <TableHead className="px-3 py-5 font-medium">Date Created</TableHead>
                   <TableHead className="px-3 py-5 font-medium">Status</TableHead>
-                  <TableHead className="relative py-3 pl-6 pr-3">Actions</TableHead>
+                  <TableHead className="relative py-3 pl-6 pr-3">Actions</TableHead> 
                 </TableRow>
               </TableHeader>
               <TableBody className="bg-white">
