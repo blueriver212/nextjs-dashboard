@@ -115,7 +115,7 @@ export function RunSimulation({ id }: { id: string }) {
   const runModel = async () => {
     setIsRunning(true);
     try {
-      const response = await fetch("https://mocat-pyssem.space/runmodel", {
+        const response = await fetch("https://mocat-pyssem.space/runmodel", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ export function RunSimulation({ id }: { id: string }) {
 
       if (response.ok) {
         const data = await response.json();
-        const statusUrl = data.task_id;
+        const statusUrl = data.task_id.replace("http","https");
 
         if (statusUrl) {
           console.log(statusUrl)
