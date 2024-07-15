@@ -2,7 +2,7 @@
 import { FormEvent, useState, useEffect } from 'react';
 import { SimulationForm, SimulationNames, Species } from '@/app/lib/definitions';
 import { Switch } from "@/components/ui/switch";
-import { Alert } from "@/components/ui/alert";
+import 'react-input-mask'
 import Link from 'next/link';
 import {
   CalendarIcon,
@@ -75,13 +75,12 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
   
 
   const [isEditing, setIsEditing] = useState(false);
-  const [currentSpecies, setCurrentSpecies] = useState(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingSpecies, setEditingSpecies] = useState<Species | null>(null);
 
   const handleEditSpecies = (e: React.FormEvent, species: Species, index: number) => {
       e.preventDefault();
+
       setIsEditing(true);
       setNewSpecies({ ...species });
       setEditingIndex(index);
@@ -91,6 +90,17 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
   const handleAddSpecies = (e: React.FormEvent) => {
       e.preventDefault();
       e.stopPropagation();
+
+      if (newSpecies !== null) {
+          const duplicate = species.some(
+            (s, i) => s.sym_name === newSpecies.sym_name && (!isEditing || i !== editingIndex)
+          );
+      
+          if (duplicate) {
+           alert(`Species with sym_name ${newSpecies.sym_name} already exists.`);
+          }
+      }
+
 
     
       if (isEditing) {
@@ -243,7 +253,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
           <fieldset name="ScenarioProperties">
               <div className="relative mt-2 rounded-md">
                   <label htmlFor="startDate" className="mb-2 block text-sm font-medium">
-                      Start Date
+                      Start Date (DD/MM/YYYY)
                   </label>
                   <div className="relative">
                       <input
@@ -344,15 +354,16 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
 
               <div className="relative mt-2 rounded-md" hidden={isVisible}>
                   <label htmlFor="integrator" className="mb-2 block text-sm font-medium">
-                      Integrator Type
+                      Integrator Type (Coming soon...)
                   </label>
                   <div className="relative">
                       <input
-                          id="integrator"
-                          name="integrator"
-                          type="text"
-                          defaultValue="BDF"
-                          className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                        id="integrator"
+                        name="integrator"
+                        type="text"
+                        readOnly={true}
+                        defaultValue="BDF"
+                        className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
                       <CogIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                   </div>
@@ -360,13 +371,14 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
 
               <div className="relative mt-2 rounded-md" hidden={isVisible}>
                   <label htmlFor="densityModel" className="mb-2 block text-sm font-medium">
-                      Density Model
+                      Density Model (Coming soon...)
                   </label>
                   <div className="relative">
                       <input
                           id="densityModel"
                           name="densityModel"
                           type="text"
+                          readOnly={true}
                           defaultValue="static_exp_dens_func"
                           className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                       />
@@ -392,7 +404,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
 
               <div className="relative mt-2 rounded-md" hidden={isVisible}>
                   <label htmlFor="impactVelocity" className="mb-2 block text-sm font-medium">
-                      Impact Velocity (km/s)
+                      Impact Velocity for Collisions (km/s)
                   </label>
                   <div className="relative">
                       <input

@@ -19,7 +19,9 @@ export default function Page() {
       </h1>
       <p className="prose prose-neutral dark:prose-invert">
         {`pySSEM is a tool that investigates the evolution of the space objects population in Low Earth Orbit (LEO) 
-        by exploiting a new probabilistic source-sink model. The objective is to estimate the LEO orbital capacity. 
+        by exploiting a new probabilistic source-sink model. The objective is to provide tools to understand the dynamics
+        of the space environment and to predict the future distribution of space objects. This is an extension of MOCAT 
+        (MIT Orbital Capacity and Assessment Tool). 
         `}
       </p>
       <br></br>

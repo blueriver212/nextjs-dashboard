@@ -115,7 +115,7 @@ export function RunSimulation({ id }: { id: string }) {
   const runModel = async () => {
     setIsRunning(true);
     try {
-      const response = await fetch("http://localhost:5000/runmodel", {
+      const response = await fetch("https://mocat-pyssem.space/runmodel", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

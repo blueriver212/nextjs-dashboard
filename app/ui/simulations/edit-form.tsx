@@ -231,7 +231,7 @@ export default function Form({ sim_names, simulation, edit }: { sim_names: Simul
           <fieldset name="ScenarioProperties">
               <div className="relative mt-2 rounded-md">
                   <label htmlFor="startDate" className="mb-2 block text-sm font-medium">
-                      Start Date
+                      Start Date (DD/MM/YYYY)
                   </label>
                   <div className="relative">
                       <input
