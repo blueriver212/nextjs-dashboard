@@ -20,8 +20,8 @@ const links = [
   { name: 'Example Simulations', href: '/dashboard/examples', icon: MagnifyingGlassIcon},
   { name: 'Community Simulations', href: '/dashboard/simulations', icon: GlobeEuropeAfricaIcon},
   { name: 'Pyssem', href: '/dashboard/pyssem', icon:  Code2Icon},
-  { name: 'Documentation', href: '/dashboard/documentation', icon: DocumentDuplicateIcon },
-  { name: 'Contact Us', href: '/dashboard/contact', icon: UserGroupIcon },
+  // { name: 'Documentation', href: '/dashboard/documentation', icon: DocumentDuplicateIcon },
+  // { name: 'Contact Us', href: '/dashboard/contact', icon: UserGroupIcon },
 ];
 
 export default function NavLinks() {

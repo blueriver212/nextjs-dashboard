@@ -27,7 +27,7 @@ export default function Page() {
                     <a
                         rel="noopener noreferrer"
                         target="_blank"
-                        href="https://test.pypi.org/project/pyssem/"
+                        href="https://pypi.org/project/pyssem/"
                         style={{ display: 'flex', alignItems: 'center', marginLeft: '4px' }}
                     >
                     PyPI <Code2Icon />

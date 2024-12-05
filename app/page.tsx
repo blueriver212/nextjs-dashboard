@@ -17,9 +17,9 @@ export default function Page() {
         />
           <p className={`text-xl text-gray-800 md:text-3xl md:leading-normal`}>
             <strong>Welcome to pyssem.</strong>{' '} 
-            A collaboration between <a href="https://nextjs.org/learn/" className="text-blue-500">
+            A collaboration between <a href="https://aeroastro.mit.edu/arclab/" className="text-blue-500">
                MIT
-            </a> and <a href="https://nextjs.org/learn/" className="text-blue-500">
+            </a> and <a href="https://www.linkedin.com/company/sgnl-ucl" className="text-blue-500">
               UCL
             </a>
             , a source-sink evolutionary model (SSEM) to help you understand the future space environment. 
